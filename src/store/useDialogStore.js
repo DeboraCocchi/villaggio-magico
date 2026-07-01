@@ -15,6 +15,7 @@ import { create } from 'zustand';
  * @typedef {Object} DialogState
  * @property {boolean}       isOpen   - Se la finestra di dialogo è visibile.
  * @property {string}        npcKey   - Chiave NPC parlante (es. 'bunny').
+ * @property {string}        npcName  - Nome leggibile dell'NPC (es. 'Fiocco'); ricade su npcKey se assente.
  * @property {string}        text     - Testo corrente mostrato.
  * @property {string[]}      queue    - Righe di testo in attesa.
  * @property {Function}      open     - Apre il dialogo con una sequenza di testi.
@@ -30,19 +31,21 @@ import { create } from 'zustand';
 export const useDialogStore = create((set, get) => ({
   isOpen: false,
   npcKey: '',
+  npcName: '',
   text:   '',
   queue:  [],
 
   /**
    * Apre il dialogo con l'NPC specificato e una sequenza di messaggi.
    *
-   * @param {string}   npcKey   - Chiave NPC (es. 'bunny').
-   * @param {string[]} messages - Array di stringhe: ogni stringa è una "pagina" di dialogo.
+   * @param {string}   npcKey    - Chiave NPC (es. 'bunny').
+   * @param {string[]} messages  - Array di stringhe: ogni stringa è una "pagina" di dialogo.
+   * @param {string}   [npcName] - Nome leggibile da mostrare (default: npcKey).
    */
-  open(npcKey, messages) {
+  open(npcKey, messages, npcName) {
     if (!messages?.length) return;
     const [first, ...rest] = messages;
-    set({ isOpen: true, npcKey, text: first, queue: rest });
+    set({ isOpen: true, npcKey, npcName: npcName || npcKey, text: first, queue: rest });
   },
 
   /**
@@ -63,6 +66,6 @@ export const useDialogStore = create((set, get) => ({
    * Chiude il dialogo e resetta lo stato.
    */
   close() {
-    set({ isOpen: false, npcKey: '', text: '', queue: [] });
+    set({ isOpen: false, npcKey: '', npcName: '', text: '', queue: [] });
   },
 }));

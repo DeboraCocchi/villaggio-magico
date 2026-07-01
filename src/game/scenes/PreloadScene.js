@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { VILLAGE_CONFIG } from '@data/villageConfig.js';
 
 /**
  * @file PreloadScene.js
@@ -25,6 +26,18 @@ const NPC_KEYS = [
   // 'cat',
   // 'dog',
 ];
+
+/**
+ * Spritesheet degli NPC umani (stesso formato del player: 96×128px,
+ * 3 colonne × 4 righe, frame 32×32) — un file per `spriteKey` usato in
+ * villageConfig.js. File atteso: public/assets/sprites/<spriteKey>.png.
+ * Derivato da villageConfig: basta aggiungere `spriteKey` a un abitante
+ * per farlo caricare automaticamente, senza toccare questo file.
+ * @type {string[]}
+ */
+const HUMAN_NPC_SPRITE_KEYS = [...new Set(
+  VILLAGE_CONFIG.inhabitants.map((i) => i.spriteKey).filter(Boolean)
+)];
 
 export class PreloadScene extends Phaser.Scene {
   constructor() {
@@ -130,6 +143,15 @@ export class PreloadScene extends Phaser.Scene {
       });
     }
 
+    // ── NPC umani ─────────────────────────────────────────────────
+    // Un file per ogni spriteKey usato in villageConfig.js (vedi sopra).
+    for (const spriteKey of HUMAN_NPC_SPRITE_KEYS) {
+      this.load.spritesheet(spriteKey, `assets/sprites/${spriteKey}.png`, {
+        frameWidth:  PLAYER_FRAME_W,
+        frameHeight: PLAYER_FRAME_H,
+      });
+    }
+
     // ── Particelle ────────────────────────────────────────────────
     // Decommentare quando hai i file
     // this.load.image('particle_leaf',  'assets/particles/leaf.png');
@@ -152,7 +174,7 @@ export class PreloadScene extends Phaser.Scene {
     this.load.audio('bgm_night', 'audio/cozy-night.mp3');
 
     // Passi: decommentare quando hai il file
-    this.load.audio('sfx_footstep', 'assets/audio/steps.wav');
+    this.load.audio('sfx_footstep', 'audio/steps.wav');
 
     // Effetti: decommentare quando hai i file
     // this.load.audio('sfx_collect', 'assets/audio/collect.ogg');
@@ -168,6 +190,9 @@ export class PreloadScene extends Phaser.Scene {
     this._createPlayerAnimations();
     for (const npc of NPC_KEYS) {
       this._createNpcAnimations(npc);
+    }
+    for (const spriteKey of HUMAN_NPC_SPRITE_KEYS) {
+      this._createHumanNpcAnimations(spriteKey);
     }
   }
 
@@ -222,6 +247,45 @@ export class PreloadScene extends Phaser.Scene {
         frames: this.anims.generateFrameNumbers(`npc_${npcKey}`, { frames }),
         frameRate: 6,
         repeat: -1,
+      });
+    }
+  }
+
+  /**
+   * Animazioni NPC umano — stesso layout frame del player (walk 4 direzioni + idle),
+   * ma con chiavi prefissate da `spriteKey` per non collidere con quelle del player
+   * o di altri NPC.
+   * @param {string} spriteKey
+   * @private
+   */
+  _createHumanNpcAnimations(spriteKey) {
+    if (!this.textures.exists(spriteKey)) return;
+
+    const directions = [
+      { suffix: 'down',  frames: [0, 1, 2]   },
+      { suffix: 'left',  frames: [3, 4, 5]   },
+      { suffix: 'right', frames: [6, 7, 8]   },
+      { suffix: 'up',    frames: [9, 10, 11] },
+    ];
+
+    for (const { suffix, frames } of directions) {
+      const key = `${spriteKey}_walk_${suffix}`;
+      if (this.anims.exists(key)) continue;
+      this.anims.create({
+        key,
+        frames: this.anims.generateFrameNumbers(spriteKey, { frames }),
+        frameRate: 8,
+        repeat: -1,
+      });
+    }
+
+    const idleKey = `${spriteKey}_idle`;
+    if (!this.anims.exists(idleKey)) {
+      this.anims.create({
+        key:    idleKey,
+        frames: [{ key: spriteKey, frame: 1 }],
+        frameRate: 1,
+        repeat: 0,
       });
     }
   }

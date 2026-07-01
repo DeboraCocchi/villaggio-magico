@@ -28,6 +28,10 @@ const NPC_AVATARS = {
   bear:  '🐻',
   cat:   '🐱',
   duck:  '🐥',
+  // NPC umani (villageConfig.js inhabitants)
+  daniele:          '👴',
+  amichetta_giulia: '😄',
+  negozio_tom:      '🛍️',
 };
 
 /** Mappa npcKey → colore accent */
@@ -37,6 +41,10 @@ const NPC_COLORS = {
   bear:  '#8d6e63',
   cat:   '#ab47bc',
   duck:  '#ffd54f',
+  // NPC umani (villageConfig.js inhabitants)
+  daniele:          '#64b5f6',
+  amichetta_giulia: '#ffd54f',
+  negozio_tom:      '#ffb74d',
 };
 
 /**
@@ -46,7 +54,7 @@ const NPC_COLORS = {
  * @returns {JSX.Element|null}
  */
 export default function DialogBox() {
-  const { isOpen, npcKey, text, advance, close } = useDialogStore();
+  const { isOpen, npcKey, npcName, text, advance, close } = useDialogStore();
 
   /** Testo visualizzato parzialmente dall'effetto typewriter */
   const [displayedText, setDisplayedText] = useState('');
@@ -56,8 +64,8 @@ export default function DialogBox() {
   const typewriterRef = useRef(null);
 
   // ── Bridge: apre il dialogo da Phaser ─────────────────────────
-  usePhaserEvent('dialog:open', ({ npcKey: key, messages }) => {
-    useDialogStore.getState().open(key, messages);
+  usePhaserEvent('dialog:open', ({ npcKey: key, messages, npcName: name }) => {
+    useDialogStore.getState().open(key, messages, name);
   });
 
   // ── Effetto typewriter ─────────────────────────────────────────
@@ -135,7 +143,7 @@ export default function DialogBox() {
         {/* Header: avatar + nome NPC */}
         <div style={{ ...styles.header, background: accentColor }}>
           <span style={styles.avatar}>{avatar}</span>
-          <span style={styles.npcName}>{npcKey}</span>
+          <span style={styles.npcName}>{npcName || npcKey}</span>
           <button
             style={styles.closeBtn}
             onClick={handleClose}

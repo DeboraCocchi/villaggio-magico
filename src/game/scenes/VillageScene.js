@@ -7,6 +7,9 @@
 import Phaser from 'phaser'
 import { AudioManager }   from '../systems/AudioManager.js'
 import { DayNightSystem } from '../systems/DayNightSystem.js'
+import { ItemManager }    from '../managers/ItemManager.js'
+import { NPCManager }     from '../managers/NPCManager.js'
+import { listenFromReact } from '../utils/phaserBridge.js'
 
 const PLAYER_SPEED = 120
 const TILE_SIZE    = 32
@@ -21,6 +24,10 @@ export class VillageScene extends Phaser.Scene {
     this.debugText = null
     this.audioManager = null
     this.dayNight      = null
+    this.itemManager   = null
+    this.npcManager    = null
+    this._dialogOpen   = false
+    this._dialogCleanup = []
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -330,7 +337,25 @@ export class VillageScene extends Phaser.Scene {
     // visivo e chiede il crossfade musicale quando cambia fascia.
     this.audioManager = new AudioManager(this)
     this.audioManager.playBase('bgm_day')
-    this.dayNight = new DayNightSystem(this, this.audioManager)
+    const housePositions = this._getHouseLightPositions(map)
+    this.dayNight = new DayNightSystem(this, this.audioManager, housePositions)
+
+    // ── Missione giornaliera + collezionabili ────────────────────────────────
+    // Legge gli Object Layer 'flowers'/'shells'/'fruits'/'mushrooms' del TMJ,
+    // sceglie la missione del giorno e piazza i collezionabili da raccogliere.
+    this.itemManager = new ItemManager(this, map)
+
+    // ── NPC umani ─────────────────────────────────────────────────────────────
+    // Un NPC per ogni abitante con blocco `npc` in villageConfig.js, posizionato
+    // sul punto omonimo dell'Object Layer "npcs" del TMJ. Tasto E per parlare.
+    this.npcManager = new NPCManager(this, map)
+
+    // Blocca il movimento mentre un dialogo NPC è aperto (DialogBox.jsx
+    // emette 'dialog:open'/'dialog:close' sul bridge window).
+    this._dialogCleanup = [
+      listenFromReact('dialog:open',  () => { this._dialogOpen = true }),
+      listenFromReact('dialog:close', () => { this._dialogOpen = false }),
+    ]
 
     // ── Camera ────────────────────────────────────────────────────────────────
     this.matter.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
@@ -369,6 +394,14 @@ export class VillageScene extends Phaser.Scene {
   // ─────────────────────────────────────────────────────────────────────────
   update() {
     if (!this.player) return
+
+    // Mentre un dialogo NPC è aperto, il player resta fermo (ma NPC/item/
+    // giorno-notte continuano ad aggiornarsi normalmente).
+    if (this._dialogOpen) {
+      this.player.setVelocity(0, 0)
+      if (this.textures.exists('player')) this.player.play('idle', true)
+      return
+    }
 
     const left  = this.cursors.left.isDown  || this.wasd.left.isDown
     const right = this.cursors.right.isDown || this.wasd.right.isDown
@@ -410,6 +443,9 @@ export class VillageScene extends Phaser.Scene {
       const ty = Math.floor(this.player.y / TILE_SIZE)
       this.debugText.setText(`tile (${tx},${ty})  px (${Math.floor(this.player.x)},${Math.floor(this.player.y)})`)
     }
+
+    this.itemManager?.update(this.player.x, this.player.y)
+    this.npcManager?.update(this.player.x, this.player.y)
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -420,7 +456,52 @@ export class VillageScene extends Phaser.Scene {
   shutdown() {
     this.dayNight?.destroy()
     this.audioManager?.destroy()
+    this.itemManager?.destroy()
+    this.npcManager?.destroy()
+    for (const cleanup of this._dialogCleanup) cleanup()
+    this._dialogCleanup = []
   }
+  // ─────────────────────────────────────────────────────────────────────────
+  /**
+   * Legge l'Object Layer "houses" del TMJ e calcola, per ogni casa,
+   * un punto (in pixel mappa) dove disegnare la luce di finestra accesa
+   * di notte: centro orizzontale del bounding box del poligono/rettangolo,
+   * un po' sotto il centro verticale (zona finestre, sotto il tetto).
+   *
+   * @param {Phaser.Tilemaps.Tilemap} map
+   * @returns {Array<{x: number, y: number}>}
+   * @private
+   */
+  _getHouseLightPositions(map) {
+    const housesLayer = map.getObjectLayer('houses')
+    if (!housesLayer) return []
+
+    const positions = []
+
+    for (const obj of housesLayer.objects) {
+      if (!obj.name) continue // salta oggetti d'appoggio senza nome
+
+      const points = obj.polygon
+        ? obj.polygon.map(p => ({ x: obj.x + p.x, y: obj.y + p.y }))
+        : [
+            { x: obj.x, y: obj.y },
+            { x: obj.x + (obj.width ?? 0), y: obj.y + (obj.height ?? 0) },
+          ]
+
+      const xs = points.map(p => p.x)
+      const ys = points.map(p => p.y)
+      const minX = Math.min(...xs), maxX = Math.max(...xs)
+      const minY = Math.min(...ys), maxY = Math.max(...ys)
+
+      positions.push({
+        x: (minX + maxX) / 2,
+        y: minY + (maxY - minY) * 0.6,
+      })
+    }
+
+    return positions
+  }
+
   // ─────────────────────────────────────────────────────────────────────────
   /**
    * Legge i metadati di animazione dai tileset Tiled e registra un timer

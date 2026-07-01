@@ -16,7 +16,8 @@ export const VILLAGE_CONFIG = {
     },
   },
 
-  // 6-10 abitanti — ognuno genera una casetta con nome sulla porta
+  // Un abitante per ogni casa già presente nell'Object Layer "houses" di villaggio.tmj
+  // (house_cece, house_daniele, house_ale, house_debora — vedi houseObjectName sotto).
   inhabitants: [
     {
       id: 'cecilia',
@@ -24,6 +25,8 @@ export const VILLAGE_CONFIG = {
       houseType: 'player',    // 'player'|'elder'|'cozy'|'garden'|'shop'|'treehouse'
       color: 'pink',          // 'pink'|'blue'|'yellow'|'green'|'purple'|'orange'
       zone: 'center',         // 'center'|'north'|'south'|'east'|'west'|'forest'
+      // Nome dell'oggetto casa nell'Object Layer "houses" del TMJ (villaggio.tmj).
+      houseObjectName: 'house_cece',
       nearbyObjects: [
         { type: 'flower',  variant: 'red',    offsetTile: { x: -2, y: 0 } },
         { type: 'flower',  variant: 'yellow', offsetTile: { x: -1, y: 0 } },
@@ -32,11 +35,14 @@ export const VILLAGE_CONFIG = {
       welcomeMessage: 'Bentornata a casa, Cecilia! 🏠 La tua stanza è in ordine.',
     },
     {
-      id: 'daniele',
+      id: 'nonno_daniele',
       residentName: 'Nonno Daniele',
       houseType: 'elder',
       color: 'blue',
       zone: 'north',
+      houseObjectName: 'house_daniele',
+      // File in public/assets/sprites/<spriteKey>.png (spritesheet 96×128, 3x4, come player.png)
+      spriteKey: 'daniele',
       nearbyObjects: [
         { type: 'bench',  variant: 'wood',  offsetTile: { x:  2, y: 1 } },
         { type: 'tree',   variant: 'apple', offsetTile: { x: -2, y: -1 } },
@@ -61,77 +67,44 @@ export const VILLAGE_CONFIG = {
         ]
     },
     {
-      id: 'amichetta_giulia',
-      residentName: 'Giulia',
+      id: 'nonna_anna',
+      residentName: 'Nonna Anna',
       houseType: 'cozy',
       color: 'yellow',
       zone: 'east',
+      houseObjectName: 'house_ale',
+      spriteKey: 'anna',
       nearbyObjects: [
         { type: 'flower', variant: 'pink',   offsetTile: { x: -1, y: 0 } },
         { type: 'flower', variant: 'purple', offsetTile: { x: -2, y: 0 } },
         { type: 'swing',  variant: 'wood',   offsetTile: { x:  3, y: 1 } },
       ],
       npc: {
-        personality: 'allegra e birichina, ama i dolci e i giochi',
-        catchphrase: 'Dai dai dai!',
-        firstDialog: 'Sofia!! Finalmente! Stavo annoiandomi 😄 Giochiamo?',
+        personality: 'saggia e premurosa, ama la sua famiglia',
+        catchphrase: 'Vieni a tavola!',
+        firstDialog: 'Cecilia!! Hai fame? Copriti che prendi freddo!',
       },
-      welcomeMessage: 'Casa di Giulia. Si sentono risate da dentro.',
+      welcomeMessage: 'Casa di Nonna Anna. C\'è sempre qualcosa di dolce da mangiare! 🍪',
     },
     {
-      id: 'amichetto_luca',
-      residentName: 'Luca',
-      houseType: 'treehouse',
-      color: 'green',
-      zone: 'forest',
-      nearbyObjects: [
-        { type: 'tree',   variant: 'oak',   offsetTile: { x: -3, y: -2 } },
-        { type: 'tree',   variant: 'oak',   offsetTile: { x:  3, y: -1 } },
-        { type: 'fossil', variant: 'stone', offsetTile: { x:  1, y:  2 } },
-      ],
-      npc: {
-        personality: 'curioso, appassionato di natura e dinosauri',
-        catchphrase: 'Lo sapevi che...?',
-        firstDialog: 'Oh, Sofia! Guarda cosa ho trovato nel bosco! 🦕',
-      },
-      welcomeMessage: "La casa sull'albero di Luca. Scala di corda inclusa.",
-    },
-    {
-      id: 'nonna_Anna',
-      residentName: 'Nonna Anna',
-      houseType: 'garden',
-      color: 'purple',
-      zone: 'south',
-      nearbyObjects: [
-        { type: 'flower', variant: 'red',    offsetTile: { x: -2, y: 1 } },
-        { type: 'flower', variant: 'orange', offsetTile: { x: -1, y: 1 } },
-        { type: 'flower', variant: 'pink',   offsetTile: { x:  0, y: 1 } },
-        { type: 'flower', variant: 'yellow', offsetTile: { x:  1, y: 1 } },
-      ],
-      npc: {
-        personality: 'dolcissima, conosce tutte le piante e prepara tisane magiche',
-        catchphrase: 'Tesoro mio!',
-        firstDialog: 'Amore! Ho fatto la crostata di marmellata! 🥧',
-      },
-      welcomeMessage: 'Casa della Nonna Anna. Il giardino è il più bello del villaggio.',
-    },
-    {
-      id: 'negozio_tom',
-      residentName: 'Tom il Mercante',
-      houseType: 'shop',
+      id: 'zia_debora',
+      residentName: 'Zia Debora',
+      houseType: 'house',
       color: 'orange',
       zone: 'center',
+      houseObjectName: 'house_debora',
+      spriteKey: 'debora',
       nearbyObjects: [
         { type: 'sign',   variant: 'shop', offsetTile: { x:  0, y: 2 } },
         { type: 'barrel', variant: 'wood', offsetTile: { x: -2, y: 1 } },
         { type: 'crate',  variant: 'wood', offsetTile: { x:  2, y: 1 } },
       ],
       npc: {
-        personality: 'allegro commerciante, sempre con nuove offerte',
+        personality: 'allegra e intraprendente, sempre con nuove offerte',
         catchphrase: 'Affare fatto!',
-        firstDialog: 'Benvenuta nel negozio di Tom! Cosa posso fare per te? 🛍️',
+        firstDialog: 'Benvenuta a casa di Zia Debora! Cosa posso fare per te? 🛍️',
       },
-      welcomeMessage: 'Il negozio di Tom. "Tutto ciò che desideri!"',
+      welcomeMessage: 'Casa di Zia Debora. "Ehi Cece, giochiamo?"',
     },
   ],
 
