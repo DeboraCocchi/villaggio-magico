@@ -1,0 +1,70 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #87CEEB;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+/* Il div wrapper che contiene canvas Phaser + overlay React */
+#app-wrapper {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* Il canvas Phaser gestisce le proprie dimensioni via Scale Manager,
+   ma assicuriamo che il parent abbia il 100% */
+#game-container {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Tutti gli overlay React sono sovrapposti al canvas */
+#ui-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none; /* passa i click al canvas salvo elementi interattivi */
+  z-index: 10;
+}
+
+/* Abilita click su elementi UI specifici */
+#ui-overlay button,
+#ui-overlay input,
+#ui-overlay [data-interactive] {
+  pointer-events: auto;
+}
+
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+#app-wrapper {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+}
+
+#game-container {
+  width: 100%;
+  height: 100%;
+}
+
+#game-container canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
