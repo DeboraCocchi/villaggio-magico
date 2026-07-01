@@ -5,6 +5,8 @@
  */
 
 import Phaser from 'phaser'
+import { AudioManager }   from '../systems/AudioManager.js'
+import { DayNightSystem } from '../systems/DayNightSystem.js'
 
 const PLAYER_SPEED = 120
 const TILE_SIZE    = 32
@@ -17,6 +19,8 @@ export class VillageScene extends Phaser.Scene {
     this.cursors = null
     this.wasd    = null
     this.debugText = null
+    this.audioManager = null
+    this.dayNight      = null
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -280,7 +284,7 @@ export class VillageScene extends Phaser.Scene {
     this.player.setBody({ type: 'rectangle', width: 20, height: 24 })
 
     // Smorzamento: senza questo Matter accumula velocità indefinitamente
-    this.player.setFrictionAir(0.99)      // resistenza aria alta → si ferma subito
+    this.player.setFrictionAir(0.982)      // resistenza aria alta → si ferma subito
     this.player.setBounce(0)           // nessun rimbalzo
     this.player.setFriction(0)         // frizione superfici (irrilevante top-down)
     this.player.setFrictionStatic(0)
@@ -319,24 +323,14 @@ export class VillageScene extends Phaser.Scene {
     // problema è che water_anim.png o foam_anim.png non sono stati trovati.
     // Controlla in console che NON ci siano "Failed to process file" per questi.
 
-    // ── Musica di sottofondo ──────────────────────────────────────────────────
-    // Il browser blocca l'audio finché l'utente non interagisce con la pagina.
-    // Usiamo 'resume' dell'AudioContext al primo click/tasto.
-    if (this.cache.audio.exists('bgm_village')) {
-      const bgm = this.sound.add('bgm_village', {
-        loop:   true,
-        volume: 0.4,   // ✏️ regola tra 0 e 1
-      })
-
-      // Phaser gestisce automaticamente il blocco autoplay:
-      // se l'AudioContext è già unlocked parte subito, altrimenti
-      // aspetta il primo input dell'utente.
-      if (this.sound.locked) {
-        this.sound.once('unlocked', () => bgm.play())
-      } else {
-        bgm.play()
-      }
-    }
+    // ── Musica di sottofondo + ciclo giorno/notte ────────────────────────────
+    // AudioManager gestisce il blocco autoplay del browser (attende il primo
+    // input utente) e il crossfade tra traccia diurna e notturna.
+    // DayNightSystem legge l'ora reale del dispositivo, applica l'overlay
+    // visivo e chiede il crossfade musicale quando cambia fascia.
+    this.audioManager = new AudioManager(this)
+    this.audioManager.playBase('bgm_day')
+    this.dayNight = new DayNightSystem(this, this.audioManager)
 
     // ── Camera ────────────────────────────────────────────────────────────────
     this.matter.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
@@ -416,6 +410,16 @@ export class VillageScene extends Phaser.Scene {
       const ty = Math.floor(this.player.y / TILE_SIZE)
       this.debugText.setText(`tile (${tx},${ty})  px (${Math.floor(this.player.x)},${Math.floor(this.player.y)})`)
     }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  /**
+   * Ferma timer e audio quando la scena viene fermata/riavviata, per
+   * evitare timer orfani e tracce musicali sovrapposte.
+   */
+  shutdown() {
+    this.dayNight?.destroy()
+    this.audioManager?.destroy()
   }
   // ─────────────────────────────────────────────────────────────────────────
   /**

@@ -143,10 +143,16 @@ export class PreloadScene extends Phaser.Scene {
     // this.load.image('icon_bell',  'assets/ui/bell.png');
 
     // ── Audio ─────────────────────────────────────────────────────
-    this.load.audio('bgm_village', 'audio/lo_fi.mp3');
+    // Traccia diurna (alba/giorno) — usata da AudioManager/DayNightSystem.
+    this.load.audio('bgm_day', 'audio/lo_fi.mp3');
+
+    // Traccia notturna (tramonto/notte): decommentare quando hai il file.
+    // Finché manca, DayNightSystem resta sulla traccia diurna e cambia
+    // solo l'overlay visivo.
+    this.load.audio('bgm_night', 'audio/cozy-night.mp3');
 
     // Passi: decommentare quando hai il file
-    // this.load.audio('sfx_footstep', 'assets/audio/steps.wav');
+    this.load.audio('sfx_footstep', 'assets/audio/steps.wav');
 
     // Effetti: decommentare quando hai i file
     // this.load.audio('sfx_collect', 'assets/audio/collect.ogg');
