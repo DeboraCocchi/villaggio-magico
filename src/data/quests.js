@@ -1,144 +1,216 @@
 /**
  * @file quests.js
- * Definizioni statiche delle missioni disponibili nel villaggio.
+ * Definizioni statiche delle missioni del villaggio, assegnate dai
+ * tre NPC di famiglia (vedi villageConfig.js): Nonno Daniele,
+ * Nonna Anna e Zia Debora.
  *
- * Ogni quest è assegnata da un NPC specifico e richiede
- * di raccogliere oggetti, parlare con personaggi o esplorare aree.
+ * I target degli step 'collect' usano ESATTAMENTE i tipi spawmati da
+ * ItemManager dagli Object Layer di Tiled: 'flower'|'shell'|'fruit'|'mushroom'.
+ * I target degli step 'talk' usano gli id NPC di villageConfig.js.
  *
- * @module quests
+ * ✏️ MODIFICA QUESTO FILE per aggiungere o cambiare missioni.
+ *
+ * @module data/quests
  */
 
 /**
  * @typedef {Object} QuestStep
- * @property {string} type     - Tipo step: 'collect'|'talk'|'explore'|'deliver'.
- * @property {string} target   - Chiave oggetto/NPC/area.
- * @property {number} [amount] - Quantità richiesta (solo per 'collect'|'deliver').
- * @property {string} hint     - Testo suggerimento mostrato all'utente.
+ * @property {'collect'|'talk'} type - Tipo step.
+ * @property {string} target   - Tipo oggetto ('flower'…) o id NPC ('nonna_anna'…).
+ * @property {number} [amount] - Quantità richiesta (solo 'collect').
+ * @property {string} hint     - Suggerimento mostrato nel pannello missioni.
  */
 
 /**
  * @typedef {Object} Quest
- * @property {string}      id          - Identificatore univoco.
- * @property {string}      giverNpc    - Chiave NPC che assegna la missione.
- * @property {string}      title       - Titolo breve.
- * @property {string}      description - Descrizione narrativa (tono bambini 6-10 anni).
- * @property {QuestStep[]} steps       - Passi in sequenza.
- * @property {Object}      reward      - Ricompensa al completamento.
- * @property {number}      reward.coins - Campane guadagnate.
- * @property {string}      [reward.item] - Oggetto speciale (opzionale).
- * @property {string[]}    seasons     - Stagioni in cui è disponibile ([] = sempre).
+ * @property {string}      id               - Identificatore univoco.
+ * @property {string}      giverNpc         - Id NPC che assegna la missione.
+ * @property {string}      title            - Titolo breve (con emoji).
+ * @property {string}      description      - Descrizione narrativa (tono 6-10 anni).
+ * @property {QuestStep[]} steps            - Passi in sequenza.
+ * @property {string[]}    offerDialog      - Pagine di dialogo quando l'NPC propone la quest.
+ * @property {string[]}    completionDialog - Pagine di dialogo al completamento.
+ * @property {Object}      reward           - Ricompensa.
+ * @property {number}      reward.coins     - Campane guadagnate.
+ * @property {string}      [reward.item]    - Oggetto speciale (opzionale).
+ * @property {string[]}    seasons          - Stagioni disponibili ([] = sempre).
  */
 
 /** @type {Quest[]} */
 export const QUESTS = [
-  // ── Fiocco il Coniglietto ──────────────────────────────────────
+
+  // ── Nonna Anna ────────────────────────────────────────────────
   {
-    id:          'q01_flowers_for_fiocco',
-    giverNpc:    'bunny',
-    title:       'Un mazzo per Fiocco 🌸',
-    description: 'Fiocco vorrebbe decorare la sua casetta con dei fiori profumati. '
-                + 'Potresti raccoglierne un po\' per lei?',
+    id:          'q01_torta_nonna_anna',
+    giverNpc:    'nonna_anna',
+    title:       'La torta di Nonna Anna 🥧',
+    description: 'La nonna vuole preparare la sua famosa torta di mele, '
+               + 'ma le servono frutti freschi!',
     steps: [
       {
         type:   'collect',
-        target: 'flower_pink',
-        amount: 5,
-        hint:   'Cerca i fiori rosa nei prati vicino al fiume!',
-      },
-    ],
-    reward: { coins: 80, item: 'fiocco_hairpin' },
-    seasons: ['primavera'],
-  },
-
-  // ── Rame la Volpe ─────────────────────────────────────────────
-  {
-    id:          'q02_explore_forest',
-    giverNpc:    'fox',
-    title:       'Esploratori del Bosco 🦊',
-    description: 'Rame ha sentito dire che nel bosco a nord si nasconde una grotta '
-                + 'segreta. Ti va di scoprirla insieme?',
-    steps: [
-      {
-        type:   'explore',
-        target: 'area_north_forest',
-        hint:   'Cammina verso nord finché non vedi gli alberi alti!',
+        target: 'fruit',
+        amount: 3,
+        hint:   'Raccogli 3 frutti 🍎 vicino agli alberi!',
       },
       {
-        type:   'explore',
-        target: 'area_hidden_cave',
-        hint:   'La grotta è dietro la cascata... guarda bene!',
+        type:   'talk',
+        target: 'nonna_anna',
+        hint:   'Porta i frutti a Nonna Anna!',
       },
     ],
-    reward: { coins: 120 },
+    offerDialog: [
+      'Cecilia tesoro, mi aiuti? 🥧',
+      'Voglio fare la torta di mele...',
+      'Mi porti 3 frutti belli maturi?',
+    ],
+    completionDialog: [
+      'Che frutti meravigliosi! 🍎',
+      'La torta sarà buonissima, grazie tesoro!',
+      'Tieni, queste campane sono per te. 🔔',
+    ],
+    reward:  { coins: 80 },
     seasons: [],
   },
 
-  // ── Biscotto l'Orso ───────────────────────────────────────────
+  // ── Nonno Daniele ─────────────────────────────────────────────
   {
-    id:          'q03_mushroom_stew',
-    giverNpc:    'bear',
-    title:       'La Zuppa di Biscotto 🍄',
-    description: 'Biscotto vuole preparare una zuppa di funghi speciale '
-                + 'ma ha bisogno del tuo aiuto per trovare gli ingredienti giusti!',
+    id:          'q02_fiori_per_la_panchina',
+    giverNpc:    'nonno_daniele',
+    title:       'Fiori per la panchina 🌸',
+    description: 'Il nonno vuole decorare la panchina del giardino '
+               + 'con i fiori più belli del villaggio.',
+    steps: [
+      {
+        type:   'collect',
+        target: 'flower',
+        amount: 5,
+        hint:   'Raccogli 5 fiori 🌸 nei prati del villaggio!',
+      },
+      {
+        type:   'talk',
+        target: 'nonno_daniele',
+        hint:   'Porta i fiori al Nonno Daniele!',
+      },
+    ],
+    offerDialog: [
+      'Cecilia mia, ho un\u2019idea! 👴',
+      'Rendiamo bella la panchina del giardino.',
+      'Mi raccogli 5 fiori colorati?',
+    ],
+    completionDialog: [
+      'Ma che meraviglia, Cecilia mia! 🌸',
+      'La panchina ora è la più bella del villaggio.',
+      'Ecco le tue campane, te le sei meritate! 🔔',
+    ],
+    reward:  { coins: 100 },
+    seasons: [],
+  },
+
+  // ── Nonno Daniele → consegna a Nonna Anna ─────────────────────
+  {
+    id:          'q03_funghetti_per_il_risotto',
+    giverNpc:    'nonno_daniele',
+    title:       'Funghetti per il risotto 🍄',
+    description: 'Il nonno ha voglia del risotto ai funghi della nonna! '
+               + 'Raccogli i funghetti e portali a Nonna Anna.',
     steps: [
       {
         type:   'collect',
         target: 'mushroom',
         amount: 3,
-        hint:   'I funghetti crescono all\'ombra degli alberi in autunno.',
-      },
-      {
-        type:   'deliver',
-        target: 'bear',
-        amount: 3,
-        hint:   'Porta i funghi a Biscotto nella sua casetta!',
-      },
-    ],
-    reward: { coins: 100 },
-    seasons: ['autunno'],
-  },
-
-  // ── Luna la Gattina ───────────────────────────────────────────
-  {
-    id:          'q04_star_watching',
-    giverNpc:    'cat',
-    title:       'Notte di Stelle con Luna 🌙',
-    description: 'Luna ama guardare le stelle di notte. '
-                + 'Trova tre frammenti di stella caduta per costruire un telescopio!',
-    steps: [
-      {
-        type:   'collect',
-        target: 'star_fragment',
-        amount: 3,
-        hint:   'I frammenti di stella cadono di notte in tutto il villaggio!',
+        hint:   'Cerca 3 funghetti 🍄 all\u2019ombra degli alberi!',
       },
       {
         type:   'talk',
-        target: 'cat',
-        hint:   'Torna da Luna con le stelle!',
+        target: 'nonna_anna',
+        hint:   'Porta i funghetti a Nonna Anna per il risotto!',
       },
     ],
-    reward: { coins: 200, item: 'mini_telescope' },
+    offerDialog: [
+      'Psst, Cecilia mia... 🍄',
+      'Ho una voglia matta del risotto della nonna!',
+      'Trovi 3 funghetti e glieli porti tu?',
+    ],
+    completionDialog: [
+      'Funghetti freschi! Che bello! 🍄',
+      'Stasera risotto per tutti, nonno compreso.',
+      'Sei un tesoro, tieni le tue campane! 🔔',
+    ],
+    reward:  { coins: 120 },
     seasons: [],
   },
 
-  // ── Pallina l'Anatroccolo ─────────────────────────────────────
+  // ── Zia Debora ────────────────────────────────────────────────
   {
-    id:          'q05_shell_collection',
-    giverNpc:    'duck',
-    title:       'La Collezione di Pallina 🐚',
-    description: 'Pallina vuole fare una collana di conchiglie per l\'estate! '
-                + 'Aiutala a trovarne alcune sulla spiaggia.',
+    id:          'q04_affare_delle_conchiglie',
+    giverNpc:    'zia_debora',
+    title:       'L\u2019affare delle conchiglie 🐚',
+    description: 'La zia vuole fare una collana di conchiglie per Cecilia. '
+               + 'Conchiglie in cambio di campane: affare fatto!',
     steps: [
       {
         type:   'collect',
         target: 'shell',
-        amount: 5,
-        hint:   'Le conchiglie si trovano sulla riva del lago in estate!',
+        amount: 4,
+        hint:   'Cerca 4 conchiglie 🐚 sulla spiaggia a sud!',
+      },
+      {
+        type:   'talk',
+        target: 'zia_debora',
+        hint:   'Porta le conchiglie a Zia Debora!',
       },
     ],
-    reward: { coins: 90, item: 'shell_necklace' },
+    offerDialog: [
+      'Ehi Cece, offerta speciale! 🐚',
+      '4 conchiglie in cambio di campane sonanti.',
+      'E ti faccio pure una collana. Affare fatto?',
+    ],
+    completionDialog: [
+      'Conchiglie perfette! 🐚',
+      'La collana sarà bellissima, come te!',
+      'Campane per la mia socia. Affare fatto! 🔔',
+    ],
+    reward:  { coins: 90, item: 'collana_di_conchiglie' },
     seasons: ['estate'],
+  },
+
+  // ── Zia Debora — giro di saluti (solo 'talk') ─────────────────
+  {
+    id:          'q05_il_giro_dei_saluti',
+    giverNpc:    'zia_debora',
+    title:       'Il giro dei saluti 🗺️',
+    description: 'La zia ha lanciato una sfida: salutare tutta la famiglia '
+               + 'facendo il giro del villaggio!',
+    steps: [
+      {
+        type:   'talk',
+        target: 'nonno_daniele',
+        hint:   'Vai a salutare il Nonno Daniele! 👴',
+      },
+      {
+        type:   'talk',
+        target: 'nonna_anna',
+        hint:   'Ora un saluto a Nonna Anna! 👵',
+      },
+      {
+        type:   'talk',
+        target: 'zia_debora',
+        hint:   'Torna dalla zia a raccontare tutto!',
+      },
+    ],
+    offerDialog: [
+      'Cece, sfida esploratrice! 🗺️',
+      'Fai il giro: saluta il nonno, poi la nonna...',
+      'E torna qui a raccontarmi tutto. Via!',
+    ],
+    completionDialog: [
+      'Giro completato, che velocità! 🏅',
+      'Sei l\u2019esploratrice più brava del villaggio.',
+      'Premio speciale per te: campane! 🔔',
+    ],
+    reward:  { coins: 150 },
+    seasons: [],
   },
 ];
 
@@ -147,16 +219,21 @@ export const QUESTS = [
 // ─────────────────────────────────────────────────────────────────
 
 /**
- * Restituisce le quest disponibili per una stagione e un NPC specifico.
+ * Mappa id → quest, per lookup veloce.
+ * @type {Map<string, Quest>}
+ */
+export const QUEST_BY_ID = new Map(QUESTS.map((q) => [q.id, q]));
+
+/**
+ * Restituisce le quest di un NPC disponibili nella stagione corrente.
  *
- * @param {string} season  - Stagione corrente (es. 'primavera').
- * @param {string} npcKey  - Chiave NPC (es. 'bunny').
+ * @param {string} season - Stagione corrente (es. 'estate').
+ * @param {string} npcId  - Id NPC (es. 'nonna_anna').
  * @returns {Quest[]}
  */
-export function getAvailableQuests(season, npcKey) {
+export function getAvailableQuests(season, npcId) {
   return QUESTS.filter((q) => {
     const seasonOk = q.seasons.length === 0 || q.seasons.includes(season);
-    const npcOk    = q.giverNpc === npcKey;
-    return seasonOk && npcOk;
+    return seasonOk && q.giverNpc === npcId;
   });
 }

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import HUD       from '@components/HUD.jsx';
 import DialogBox from '@components/DialogBox.jsx';
+import QuestPanel from '@components/QuestPanel.jsx';
 
 /**
  * Root dell'applicazione.
@@ -43,6 +44,7 @@ export default function App() {
       <div id="game-container" />
       <div id="ui-overlay">
         <HUD />
+        <QuestPanel />
         <DialogBox />
       </div>
     </div>

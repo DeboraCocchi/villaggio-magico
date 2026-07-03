@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { generateNpcDialog } from '@api/claude.js';
+import { getNextNpcDialog } from '@api/dialogueAI.js';
 import { emitToReact } from '../utils/phaserBridge.js';
 import { usePlayerStore } from '@store/usePlayerStore.js';
 
@@ -121,16 +121,30 @@ export class NPC extends Phaser.GameObjects.Container {
     this._busy = true;
     this._prompt.setVisible(false);
 
+    // ── 1. Sistema quest: completamenti, avanzamenti o nuove offerte ──
+    // Se il QuestManager ha qualcosa da dire (offerta/completamento),
+    // il suo dialogo ha priorità sul dialogo normale.
+    const questLines = this.scene.questManager?.onNpcTalk(this.id) ?? null;
+    if (questLines) {
+      emitToReact('dialog:open', { npcKey: this.id, npcName: this.residentName, messages: questLines });
+      this._busy = false;
+      return;
+    }
+
+    // ── 2. Dialogo normale: pool pre-scritto, poi AI gratuita ──
     const { name: playerName, season } = usePlayerStore.getState();
 
-    const lines = await generateNpcDialog({
-      npcKey:      this.id,
-      npcName:     this.residentName,
-      personality: this.personality,
+    const questHint = this.scene.questManager?.getHintForNpc(this.id) ?? '';
+    const catchHint = this.catchphrase
+      ? `Frase preferita di ${this.residentName}: "${this.catchphrase}". `
+      : '';
+
+    const lines = await getNextNpcDialog({
+      npcId:      this.id,
+      npcName:    this.residentName,
       playerName,
       season,
-      context: this.catchphrase ? `Frase preferita di ${this.residentName}: "${this.catchphrase}"` : '',
-      lines: 3,
+      context: `${catchHint}${questHint}`.trim(),
     });
 
     emitToReact('dialog:open', { npcKey: this.id, npcName: this.residentName, messages: lines });

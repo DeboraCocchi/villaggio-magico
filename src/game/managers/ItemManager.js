@@ -230,6 +230,10 @@ export class ItemManager {
     this.collectedIds.add(id);
     this._saveState();
     this._emitProgress();
+
+    // Notifica il sistema quest (QuestManager) della raccolta.
+    // Evento generico sul bridge: nessun accoppiamento diretto.
+    emitToReact('item:collected', { type: item.type });
   }
 
   // ─────────────────────────────────────────────────────────────────

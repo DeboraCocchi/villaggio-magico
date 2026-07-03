@@ -10,9 +10,11 @@ import { DayNightSystem } from '../systems/DayNightSystem.js'
 import { ItemManager }    from '../managers/ItemManager.js'
 import { NPCManager }     from '../managers/NPCManager.js'
 import { listenFromReact } from '../utils/phaserBridge.js'
+import { QuestManager } from '../managers/QuestManager.js'
 
 const PLAYER_SPEED = 120
 const TILE_SIZE    = 32
+const PLAYER_FACING_STORAGE_KEY = 'villaggio-player-facing'
 
 export class VillageScene extends Phaser.Scene {
   constructor() {
@@ -26,8 +28,10 @@ export class VillageScene extends Phaser.Scene {
     this.dayNight      = null
     this.itemManager   = null
     this.npcManager    = null
+    this.questManager  = null
     this._dialogOpen   = false
     this._dialogCleanup = []
+    this.playerFacing = 'down'
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -221,7 +225,9 @@ export class VillageScene extends Phaser.Scene {
     mkLayer(14, 14)  // baracchino
     mkLayer(15, 15)  // case
     mkLayer(16, 16)  // case2
-    // Player sarà depth 17
+    mkLayer(17, 17)  // case     ← MANCAVA
+    mkLayer(18, 18) 
+    // Player sarà depth 19
 
     // ── Attiva animazioni Tiled (acqua, cascata) ──────────────────────────────
     this._initTiledAnimations(map)
@@ -284,14 +290,16 @@ export class VillageScene extends Phaser.Scene {
     const spawnY = map.heightInPixels / 2
 
     this.player = this.matter.add.sprite(spawnX, spawnY, 'player')
-    this.player.setDepth(17)
+    this.player.setDepth(19)
     this.player.setFixedRotation()   // impedisce rotazioni fisiche
 
     // Corpo fisico più piccolo dello sprite
     this.player.setBody({ type: 'rectangle', width: 20, height: 24 })
 
+    this.playerFacing = this._loadPlayerFacing()
+
     // Smorzamento: senza questo Matter accumula velocità indefinitamente
-    this.player.setFrictionAir(0.982)      // resistenza aria alta → si ferma subito
+    this.player.setFrictionAir(0.982)      // resistenza aria
     this.player.setBounce(0)           // nessun rimbalzo
     this.player.setFriction(0)         // frizione superfici (irrilevante top-down)
     this.player.setFrictionStatic(0)
@@ -314,7 +322,9 @@ export class VillageScene extends Phaser.Scene {
         this.anims.create({ key: 'walk_up',    frames: this.anims.generateFrameNumbers('player', { start:  9, end: 11 }), frameRate: 8, repeat: -1 })
       if (!this.anims.exists('idle'))
         this.anims.create({ key: 'idle',       frames: [{ key: 'player', frame: 1 }],                                     frameRate: 1, repeat: -1 })
-      this.player.play('idle')
+      const idleFrameByFacing = { down: 1, left: 4, right: 7, up: 10 }
+      this.player.anims.stop()
+      this.player.setFrame(idleFrameByFacing[this.playerFacing] ?? 1)
     } else {
       console.warn('[VillageScene] player.png non trovato')
     }
@@ -357,6 +367,11 @@ export class VillageScene extends Phaser.Scene {
       listenFromReact('dialog:close', () => { this._dialogOpen = false }),
     ]
 
+    // ── Sistema missioni ───────────────────────────────────────────
+    // Ascolta 'item:collected' (ItemManager) e gestisce offerta/avanzamento/
+    // completamento quest quando NPC.interact() chiama onNpcTalk().
+    this.questManager = new QuestManager(this)
+
     // ── Camera ────────────────────────────────────────────────────────────────
     this.matter.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
     this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
@@ -395,11 +410,16 @@ export class VillageScene extends Phaser.Scene {
   update() {
     if (!this.player) return
 
+    const idleFrameByFacing = { down: 1, left: 4, right: 7, up: 10 }
+
     // Mentre un dialogo NPC è aperto, il player resta fermo (ma NPC/item/
     // giorno-notte continuano ad aggiornarsi normalmente).
     if (this._dialogOpen) {
       this.player.setVelocity(0, 0)
-      if (this.textures.exists('player')) this.player.play('idle', true)
+      if (this.textures.exists('player')) {
+        this.player.anims.stop()
+        this.player.setFrame(idleFrameByFacing[this.playerFacing] ?? 1)
+      }
       return
     }
 
@@ -415,6 +435,17 @@ export class VillageScene extends Phaser.Scene {
     if (right) vx =  PLAYER_SPEED
     if (up)    vy = -PLAYER_SPEED
     if (down)  vy =  PLAYER_SPEED
+
+    let nextFacing = null
+    if (left) nextFacing = 'left'
+    else if (right) nextFacing = 'right'
+    else if (up) nextFacing = 'up'
+    else if (down) nextFacing = 'down'
+
+    if (nextFacing && nextFacing !== this.playerFacing) {
+      this.playerFacing = nextFacing
+      this._savePlayerFacing(this.playerFacing)
+    }
 
     // Normalizza diagonale
     if (vx !== 0 && vy !== 0) {
@@ -435,7 +466,10 @@ export class VillageScene extends Phaser.Scene {
       else if (right) this.player.play('walk_right', true)
       else if (up)    this.player.play('walk_up',    true)
       else if (down)  this.player.play('walk_down',  true)
-      else            this.player.play('idle',       true)
+      else {
+        this.player.anims.stop()
+        this.player.setFrame(idleFrameByFacing[this.playerFacing] ?? 1)
+      }
     }
 
     if (import.meta.env.DEV && this.debugText?.visible) {
@@ -448,6 +482,27 @@ export class VillageScene extends Phaser.Scene {
     this.npcManager?.update(this.player.x, this.player.y)
   }
 
+  _loadPlayerFacing() {
+    try {
+      const facing = localStorage.getItem(PLAYER_FACING_STORAGE_KEY)
+      if (facing === 'down' || facing === 'left' || facing === 'right' || facing === 'up') {
+        return facing
+      }
+    } catch (e) {
+      console.warn('[VillageScene] Impossibile leggere direzione player da localStorage:', e)
+    }
+
+    return 'down'
+  }
+
+  _savePlayerFacing(facing) {
+    try {
+      localStorage.setItem(PLAYER_FACING_STORAGE_KEY, facing)
+    } catch (e) {
+      console.warn('[VillageScene] Impossibile salvare direzione player in localStorage:', e)
+    }
+  }
+
   // ─────────────────────────────────────────────────────────────────────────
   /**
    * Ferma timer e audio quando la scena viene fermata/riavviata, per
@@ -458,6 +513,7 @@ export class VillageScene extends Phaser.Scene {
     this.audioManager?.destroy()
     this.itemManager?.destroy()
     this.npcManager?.destroy()
+    this.questManager?.destroy()   // ← NUOVA
     for (const cleanup of this._dialogCleanup) cleanup()
     this._dialogCleanup = []
   }
