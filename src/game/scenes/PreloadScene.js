@@ -158,6 +158,13 @@ export class PreloadScene extends Phaser.Scene {
     // this.load.image('particle_star',  'assets/particles/star.png');
     // this.load.image('particle_petal', 'assets/particles/petal.png');
 
+    // ── Collezionabili ───────────────────────────────────────────
+    // mission_fruits: 14×109 con 4 frutti (arancia, mela, pesca, pera)
+    this.load.spritesheet('mission_fruits', 'assets/tilesets/mission_fruits.png', {
+      frameWidth:  14,
+      frameHeight: 27,
+    });
+
     // ── Icone UI ──────────────────────────────────────────────────
     // Decommentare quando hai i file
     // this.load.image('icon_coin',  'assets/ui/coin.png');

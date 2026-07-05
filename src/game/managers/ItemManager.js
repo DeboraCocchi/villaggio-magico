@@ -1,4 +1,4 @@
-import { CollectibleItem } from '../entities/CollectibleItem.js';
+import { createCollectible } from '../entities/CollectibleItem.js';
 import { SeededRandom } from '../generators/PRNG.js';
 import { emitToReact } from '../utils/phaserBridge.js';
 
@@ -83,7 +83,7 @@ export class ItemManager {
     /** @type {string} */
     this.storageKey = `villaggio_magico_items_${this.dateKey}`;
 
-    /** @type {Map<number, CollectibleItem>} */
+    /** @type {Map<number, (CollectibleFruit|CollectibleEmoji)>} */
     this._active = new Map();
 
     const saved = this._loadSavedState();
@@ -178,7 +178,8 @@ export class ItemManager {
   /**
    * Determina (o ricarica) la missione del giorno e decide quali slot
    * spawnano, garantendo il minimo necessario per completarla. Crea un
-   * CollectibleItem per ogni slot attivo non ancora raccolto oggi.
+   * collezionabile (Sprite per frutti, Text per emoji) per ogni slot
+   * attivo non ancora raccolto oggi.
    * @private
    */
   _rollMissionAndSpawn() {
@@ -212,7 +213,7 @@ export class ItemManager {
 
     for (const slot of activeSlots) {
       if (this.collectedIds.has(slot.id)) continue; // già raccolto oggi
-      const item = new CollectibleItem(this.scene, slot.x, slot.y, slot.type, slot.id);
+      const item = createCollectible(this.scene, slot.x, slot.y, slot.type, slot.id);
       this._active.set(slot.id, item);
     }
 

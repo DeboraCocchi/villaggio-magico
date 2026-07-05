@@ -290,7 +290,7 @@ export class VillageScene extends Phaser.Scene {
     const spawnY = map.heightInPixels / 2
 
     this.player = this.matter.add.sprite(spawnX, spawnY, 'player')
-    this.player.setDepth(19)
+    this.player.setDepth(this.player.y) 
     this.player.setFixedRotation()   // impedisce rotazioni fisiche
 
     // Corpo fisico più piccolo dello sprite
@@ -554,6 +554,7 @@ export class VillageScene extends Phaser.Scene {
         y: minY + (maxY - minY) * 0.6,
       })
     }
+
 
     return positions
   }
