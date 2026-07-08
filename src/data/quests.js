@@ -49,14 +49,14 @@ export const QUESTS = [
     steps: [
       {
         type:   'collect',
-        target: 'fruit',
+        target: 'mela',
         amount: 3,
-        hint:   'Raccogli 3 frutti 🍎 vicino agli alberi!',
+        hint:   'Raccogli 3 mele 🍎 vicino agli alberi!',
       },
       {
         type:   'talk',
         target: 'nonna_anna',
-        hint:   'Porta i frutti a Nonna Anna!',
+        hint:   'Porta le mele a Nonna Anna!',
       },
     ],
     offerDialog: [

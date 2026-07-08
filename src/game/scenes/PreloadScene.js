@@ -165,6 +165,12 @@ export class PreloadScene extends Phaser.Scene {
       frameHeight: 27,
     });
 
+    // mission_flowers: 20×120 con 5 fiori (tulipano, genziana, girasole, rosa, viola)
+    this.load.spritesheet('mission_flowers', 'assets/tilesets/mission_flowers.png', {
+      frameWidth:  20,
+      frameHeight: 24,
+    });
+
     // ── Icone UI ──────────────────────────────────────────────────
     // Decommentare quando hai i file
     // this.load.image('icon_coin',  'assets/ui/coin.png');

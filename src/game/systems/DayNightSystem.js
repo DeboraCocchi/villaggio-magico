@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { emitToReact } from '../utils/phaserBridge.js';
+import { SeasonalDaylight } from '../utils/SeasonalDaylight.js';
 
 /**
  * @file DayNightSystem.js
@@ -21,21 +22,64 @@ import { emitToReact } from '../utils/phaserBridge.js';
  */
 
 /**
- * Keyframe colore/opacità dell'overlay per ora del giorno (0-24).
- * Interpolati linearmente tra keyframe adiacenti.
- * ✏️ Modifica qui gli orari/colori delle fasi.
- * @type {Array<{hour: number, color: number, alpha: number}>}
+ * Keyframe stagionali: colore/opacità dell'overlay per ogni stagione italiana.
+ * Ogni stagione ha alba/tramonto a orari diversi (Roma ~41°N).
+ * Notte: blu-violetta profonda (0x0d1f3c) per atmosfera realistica.
+ * @type {Object<string, Array<{hour: number, color: number, alpha: number}>>}
  */
-const OVERLAY_KEYFRAMES = [
-  { hour: 0,    color: 0x0c1638, alpha: 0.62 }, // notte fonda
-  { hour: 5,    color: 0x0c1638, alpha: 0.62 }, // notte fonda (fine)
-  { hour: 6.5,  color: 0xff9d5c, alpha: 0.28 }, // alba
-  { hour: 8,    color: 0xffffff, alpha: 0    }, // giorno pieno
-  { hour: 18,   color: 0xffffff, alpha: 0    }, // giorno pieno (fine)
-  { hour: 19.5, color: 0xff7a45, alpha: 0.32 }, // tramonto
-  { hour: 21,   color: 0x0c1638, alpha: 0.62 }, // notte fonda
-  { hour: 24,   color: 0x0c1638, alpha: 0.62 }, // chiusura ciclo
-];
+const SEASONAL_KEYFRAMES = {
+  inverno: [
+    // Dicembre–Febbraio: giorni corti (alba ~7:30, tramonto ~16:45)
+    { hour: 0,    color: 0x0d1f3c, alpha: 0.68 }, // notte blu-violetta
+    { hour: 7,    color: 0x0d1f3c, alpha: 0.68 },
+    { hour: 7.5,  color: 0x4a5f8f, alpha: 0.35 }, // alba: blu freddo
+    { hour: 8.5,  color: 0xffffff, alpha: 0    }, // giorno pieno
+    { hour: 16.5, color: 0xffffff, alpha: 0    }, // giorno pieno (fine)
+    { hour: 17,   color: 0xff8c5a, alpha: 0.38 }, // tramonto: arancione
+    { hour: 17.5, color: 0x5f4a8f, alpha: 0.45 }, // crepuscolo: viola
+    { hour: 18,   color: 0x0d1f3c, alpha: 0.68 }, // notte blu-violetta
+    { hour: 24,   color: 0x0d1f3c, alpha: 0.68 },
+  ],
+
+  primavera: [
+    // Marzo–Maggio: giorni allungati (alba ~6:00→4:45, tramonto ~18:00→19:15)
+    { hour: 0,    color: 0x0d1f3c, alpha: 0.68 },
+    { hour: 4.5,  color: 0x0d1f3c, alpha: 0.68 },
+    { hour: 5,    color: 0x6b7fb8, alpha: 0.32 }, // alba: blu-indaco
+    { hour: 6.5,  color: 0xffffff, alpha: 0    }, // giorno pieno
+    { hour: 19,   color: 0xffffff, alpha: 0    }, // giorno pieno (fine)
+    { hour: 19.5, color: 0xff9d5c, alpha: 0.35 }, // tramonto: arancione caldo
+    { hour: 20.2, color: 0x6b5f8f, alpha: 0.42 }, // crepuscolo: viola
+    { hour: 21,   color: 0x0d1f3c, alpha: 0.68 },
+    { hour: 24,   color: 0x0d1f3c, alpha: 0.68 },
+  ],
+
+  estate: [
+    // Giugno–Agosto: giorni lunghi (alba ~4:45, tramonto ~21:00)
+    { hour: 0,    color: 0x0d1f3c, alpha: 0.68 },
+    { hour: 4,    color: 0x0d1f3c, alpha: 0.68 },
+    { hour: 4.5,  color: 0x6b7fb8, alpha: 0.32 }, // alba: blu-indaco
+    { hour: 5.5,  color: 0xffffff, alpha: 0    }, // giorno pieno
+    { hour: 20.5, color: 0xffffff, alpha: 0    }, // giorno pieno (fine)
+    { hour: 21,   color: 0xff9d5c, alpha: 0.28 }, // tramonto: arancione tenero
+    { hour: 21.8, color: 0x6b5f8f, alpha: 0.40 }, // crepuscolo: viola
+    { hour: 22.5, color: 0x0d1f3c, alpha: 0.68 },
+    { hour: 24,   color: 0x0d1f3c, alpha: 0.68 },
+  ],
+
+  autunno: [
+    // Settembre–Novembre: giorni accorciati (alba ~6:00→7:30, tramonto ~18:30→16:30)
+    { hour: 0,    color: 0x0d1f3c, alpha: 0.68 },
+    { hour: 6,    color: 0x0d1f3c, alpha: 0.68 },
+    { hour: 6.5,  color: 0x6b7fb8, alpha: 0.33 }, // alba: blu-indaco
+    { hour: 7.5,  color: 0xffffff, alpha: 0    }, // giorno pieno
+    { hour: 18,   color: 0xffffff, alpha: 0    }, // giorno pieno (fine)
+    { hour: 18.5, color: 0xff9d5c, alpha: 0.36 }, // tramonto: arancione
+    { hour: 19.2, color: 0x5f4a8f, alpha: 0.43 }, // crepuscolo: viola
+    { hour: 20,   color: 0x0d1f3c, alpha: 0.68 },
+    { hour: 24,   color: 0x0d1f3c, alpha: 0.68 },
+  ],
+};
 
 /** Finestra oraria [inizio,fine) considerata "diurna" (musica + luci spente). */
 const DAY_START_HOUR = 6.5;
@@ -68,6 +112,9 @@ export class DayNightSystem {
 
     /** @type {boolean|null} Ultima fascia (giorno/notte) applicata, per evitare transizioni ripetute. */
     this._isDay = null;
+
+    /** @type {string} Stagione corrente memorizzata. */
+    this._currentSeason = SeasonalDaylight.getCurrentSeason();
 
     const { width, height } = scene.scale;
     /** @type {Phaser.GameObjects.Rectangle} */
@@ -106,7 +153,14 @@ export class DayNightSystem {
     const now  = new Date();
     const hour = now.getHours() + now.getMinutes() / 60;
 
-    const { color, alpha } = this._sampleOverlay(hour);
+    // Controlla se la stagione è cambiata
+    const season = SeasonalDaylight.getCurrentSeason(now);
+    if (season !== this._currentSeason) {
+      this._currentSeason = season;
+    }
+
+    const keyframes = this._getSeasonalKeyframes(this._currentSeason);
+    const { color, alpha } = this._sampleOverlay(hour, keyframes);
     this.overlay.setFillStyle(color, alpha);
 
     const isDay = hour >= DAY_START_HOUR && hour < DAY_END_HOUR;
@@ -118,7 +172,7 @@ export class DayNightSystem {
 
     const hh = String(now.getHours()).padStart(2, '0');
     const mm = String(now.getMinutes()).padStart(2, '0');
-    emitToReact('world:timeChanged', { time: `${hh}:${mm}` });
+    emitToReact('world:timeChanged', { time: `${hh}:${mm}`, season: this._currentSeason });
   }
 
   /**
@@ -141,17 +195,32 @@ export class DayNightSystem {
   /**
    * Crea una piccola luce calda (alone + nucleo) per una finestra di casa,
    * inizialmente spenta (alpha 0): si accende con un fade quando scende la notte.
+   * Usa strati sovrapposti per simulare un effetto gradiente radiale (cono di luce).
    * @param {number} x
    * @param {number} y
    * @returns {Phaser.GameObjects.Container}
    * @private
    */
   _createHouseLight(x, y) {
-    const halo = this.scene.add.circle(0, 0, 12, 0xffe08a, 0.25)
-      .setBlendMode(Phaser.BlendModes.ADD);
-    const core = this.scene.add.circle(0, 0, 4, 0xfff3c4, 0.95);
+    const container = this.scene.add.container(x, y);
 
-    return this.scene.add.container(x, y, [halo, core])
+    // Strato 1: Alone esteriore (trasparente, grande)
+    const glow1 = this.scene.add.circle(0, 0, 20, 0xffe08a, 0.08)
+      .setBlendMode(Phaser.BlendModes.ADD);
+
+    // Strato 2: Alone medio
+    const glow2 = this.scene.add.circle(0, 0, 14, 0xffe08a, 0.15)
+      .setBlendMode(Phaser.BlendModes.ADD);
+
+    // Strato 3: Alone principale
+    const glow3 = this.scene.add.circle(0, 0, 8, 0xffe08a, 0.35)
+      .setBlendMode(Phaser.BlendModes.ADD);
+
+    // Strato 4: Nucleo brillante
+    const core = this.scene.add.circle(0, 0, 3, 0xfff3c4, 0.95);
+
+    container.add([glow1, glow2, glow3, core]);
+    return container
       .setDepth(HOUSE_LIGHT_DEPTH)
       .setAlpha(0);
   }
@@ -174,13 +243,14 @@ export class DayNightSystem {
 
   /**
    * Interpola colore e alpha dell'overlay tra i due keyframe che
-   * racchiudono `hour`.
+   * racchiudono `hour`, usando i keyframe della stagione corrente.
    * @param {number} hour - Ora frazionaria 0-24 (es. 14.5 = 14:30).
+   * @param {Array<{hour: number, color: number, alpha: number}>} keyframes - Keyframe stagionali.
    * @returns {{color: number, alpha: number}}
    * @private
    */
-  _sampleOverlay(hour) {
-    const frames = OVERLAY_KEYFRAMES;
+  _sampleOverlay(hour, keyframes) {
+    const frames = keyframes;
     let a = frames[0];
     let b = frames[frames.length - 1];
 
@@ -205,6 +275,16 @@ export class DayNightSystem {
       color: Phaser.Display.Color.GetColor(mixed.r, mixed.g, mixed.b),
       alpha: a.alpha + (b.alpha - a.alpha) * t,
     };
+  }
+
+  /**
+   * Restituisce l'array di keyframe per la stagione indicata.
+   * @param {string} season - 'primavera'|'estate'|'autunno'|'inverno'
+   * @returns {Array<{hour: number, color: number, alpha: number}>}
+   * @private
+   */
+  _getSeasonalKeyframes(season) {
+    return SEASONAL_KEYFRAMES[season] || SEASONAL_KEYFRAMES.primavera;
   }
 
   /**

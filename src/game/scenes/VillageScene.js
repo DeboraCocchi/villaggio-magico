@@ -460,6 +460,10 @@ export class VillageScene extends Phaser.Scene {
     // Azzera anche la velocità angolare ogni frame (anti-spin)
     this.player.setAngularVelocity(0)
 
+    // Aggiorna la profondità del player basata sulla posizione Y (isometric-like depth sort)
+    // per ottenere il corretto ordinamento Z-order con i collezionabili
+    this.player.setDepth(this.player.y)
+
     // Animazioni
     if (this.textures.exists('player')) {
       if (left)       this.player.play('walk_left',  true)
