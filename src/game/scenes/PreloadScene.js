@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { VILLAGE_CONFIG } from '@data/villageConfig.js';
+import { getDirectionFrames } from '../utils/characterSpriteLayout.js';
 
 /**
  * @file PreloadScene.js
@@ -38,6 +39,18 @@ const NPC_KEYS = [
 const HUMAN_NPC_SPRITE_KEYS = [...new Set(
   VILLAGE_CONFIG.inhabitants.map((i) => i.spriteKey).filter(Boolean)
 )];
+
+/**
+ * Spritesheet dei pet (Blue, Robby, Corrado, il coniglio di Cecilia...) —
+ * stesso formato 96×128 3×4 delle sprite umane. Derivato da villageConfig:
+ * basta aggiungere `spriteKey` a un pet (in `inhabitants[].pet` o
+ * `player.pet`) per farlo caricare automaticamente.
+ * @type {string[]}
+ */
+const PET_SPRITE_KEYS = [...new Set([
+  VILLAGE_CONFIG.player.pet?.spriteKey,
+  ...VILLAGE_CONFIG.inhabitants.flatMap((i) => (i.pet ?? []).map((p) => p.spriteKey)),
+].filter(Boolean))];
 
 export class PreloadScene extends Phaser.Scene {
   constructor() {
@@ -152,6 +165,15 @@ export class PreloadScene extends Phaser.Scene {
       });
     }
 
+    // ── Pet ───────────────────────────────────────────────────────
+    // Stesso formato spritesheet delle NPC umane (vedi sopra).
+    for (const spriteKey of PET_SPRITE_KEYS) {
+      this.load.spritesheet(spriteKey, `assets/sprites/${spriteKey}.png`, {
+        frameWidth:  PLAYER_FRAME_W,
+        frameHeight: PLAYER_FRAME_H,
+      });
+    }
+
     // ── Particelle ────────────────────────────────────────────────
     // Decommentare quando hai i file
     // this.load.image('particle_leaf',  'assets/particles/leaf.png');
@@ -165,10 +187,11 @@ export class PreloadScene extends Phaser.Scene {
       frameHeight: 27,
     });
 
-    // mission_flowers: 20×120 con 5 fiori (tulipano, genziana, girasole, rosa, viola)
+    // mission_flowers: 30×150 (1 colonna × 5 righe) con 5 fiori: tulipano,
+    // genziana, girasole, rosa, viola — in quest'ordine dall'alto in basso.
     this.load.spritesheet('mission_flowers', 'assets/tilesets/mission_flowers.png', {
-      frameWidth:  20,
-      frameHeight: 24,
+      frameWidth:  30,
+      frameHeight: 30,
     });
 
     // ── Icone UI ──────────────────────────────────────────────────
@@ -205,6 +228,9 @@ export class PreloadScene extends Phaser.Scene {
       this._createNpcAnimations(npc);
     }
     for (const spriteKey of HUMAN_NPC_SPRITE_KEYS) {
+      this._createHumanNpcAnimations(spriteKey);
+    }
+    for (const spriteKey of PET_SPRITE_KEYS) {
       this._createHumanNpcAnimations(spriteKey);
     }
   }
@@ -274,11 +300,12 @@ export class PreloadScene extends Phaser.Scene {
   _createHumanNpcAnimations(spriteKey) {
     if (!this.textures.exists(spriteKey)) return;
 
+    const frameMap = getDirectionFrames(spriteKey);
     const directions = [
-      { suffix: 'down',  frames: [0, 1, 2]   },
-      { suffix: 'left',  frames: [3, 4, 5]   },
-      { suffix: 'right', frames: [6, 7, 8]   },
-      { suffix: 'up',    frames: [9, 10, 11] },
+      { suffix: 'down',  frames: frameMap.down  },
+      { suffix: 'left',  frames: frameMap.left  },
+      { suffix: 'right', frames: frameMap.right },
+      { suffix: 'up',    frames: frameMap.up    },
     ];
 
     for (const { suffix, frames } of directions) {

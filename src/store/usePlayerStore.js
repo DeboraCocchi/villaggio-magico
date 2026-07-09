@@ -30,7 +30,7 @@ import { create } from 'zustand';
  * @type {import('zustand').UseBoundStore<import('zustand').StoreApi<PlayerState>>}
  */
 export const usePlayerStore = create((set) => ({
-  name:        'Giocatrice',
+  name:        'Cecilia',
   coins:       0,
   hearts:      3,
   currentTime: '08:00',

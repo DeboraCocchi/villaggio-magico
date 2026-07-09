@@ -9,6 +9,7 @@ import { AudioManager }   from '../systems/AudioManager.js'
 import { DayNightSystem } from '../systems/DayNightSystem.js'
 import { ItemManager }    from '../managers/ItemManager.js'
 import { NPCManager }     from '../managers/NPCManager.js'
+import { PetManager }     from '../managers/PetManager.js'
 import { listenFromReact } from '../utils/phaserBridge.js'
 import { QuestManager } from '../managers/QuestManager.js'
 
@@ -28,6 +29,7 @@ export class VillageScene extends Phaser.Scene {
     this.dayNight      = null
     this.itemManager   = null
     this.npcManager    = null
+    this.petManager    = null
     this.questManager  = null
     this._dialogOpen   = false
     this._dialogCleanup = []
@@ -360,6 +362,11 @@ export class VillageScene extends Phaser.Scene {
     // sul punto omonimo dell'Object Layer "npcs" del TMJ. Tasto E per parlare.
     this.npcManager = new NPCManager(this, map)
 
+    // ── Pet ───────────────────────────────────────────────────────────────────
+    // Blue (Zia Debora), Robby e Corrado (Nonno Daniele) vagabondano vicino
+    // casa; il pet della player la segue ovunque si sposti nel villaggio.
+    this.petManager = new PetManager(this, map, this.player)
+
     // Blocca il movimento mentre un dialogo NPC è aperto (DialogBox.jsx
     // emette 'dialog:open'/'dialog:close' sul bridge window).
     this._dialogCleanup = [
@@ -371,6 +378,8 @@ export class VillageScene extends Phaser.Scene {
     // Ascolta 'item:collected' (ItemManager) e gestisce offerta/avanzamento/
     // completamento quest quando NPC.interact() chiama onNpcTalk().
     this.questManager = new QuestManager(this)
+
+    if (import.meta.env.DEV) window.__scene = this // eslint-disable-line -- TEMP debug hook, rimosso a fine verifica
 
     // ── Camera ────────────────────────────────────────────────────────────────
     this.matter.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
@@ -407,7 +416,7 @@ export class VillageScene extends Phaser.Scene {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  update() {
+  update(time, delta) {
     if (!this.player) return
 
     const idleFrameByFacing = { down: 1, left: 4, right: 7, up: 10 }
@@ -484,6 +493,7 @@ export class VillageScene extends Phaser.Scene {
 
     this.itemManager?.update(this.player.x, this.player.y)
     this.npcManager?.update(this.player.x, this.player.y)
+    this.petManager?.update(this.player.x, this.player.y, delta, this.playerFacing)
   }
 
   _loadPlayerFacing() {
@@ -517,6 +527,7 @@ export class VillageScene extends Phaser.Scene {
     this.audioManager?.destroy()
     this.itemManager?.destroy()
     this.npcManager?.destroy()
+    this.petManager?.destroy()
     this.questManager?.destroy()   // ← NUOVA
     for (const cleanup of this._dialogCleanup) cleanup()
     this._dialogCleanup = []

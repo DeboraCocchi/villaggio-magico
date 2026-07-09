@@ -156,23 +156,104 @@ export class ItemManager {
    */
   _collectSlots(map) {
     const slots = [];
+    const collisionShapes = this._collectCollisionShapes(map);
 
     for (const layerName of SLOT_LAYER_NAMES) {
       const layer = map.getObjectLayer(layerName);
       if (!layer) continue;
 
       for (const obj of layer.objects) {
+        const x = obj.x + (obj.width  ?? 0) / 2;
+        const y = obj.y + (obj.height ?? 0) / 2;
+
+        // Salta gli slot che cadono dentro un ostacolo (albero, muro,
+        // staccionata...): il player non potrebbe mai raggiungerli lì per raccoglierli.
+        if (this._isInsideAnyShape(x, y, collisionShapes)) continue;
+
         slots.push({
           id:   obj.id,
           type: obj.type || SINGULAR_TYPE[layerName],
-          x:    obj.x + (obj.width  ?? 0) / 2,
-          y:    obj.y + (obj.height ?? 0) / 2,
+          x,
+          y,
         });
       }
     }
 
     slots.sort((a, b) => a.id - b.id);
     return slots;
+  }
+
+  /**
+   * Legge l'Object Layer "collision" del TMJ (stessi rettangoli/poligoni/
+   * ellissi usati da VillageScene per i corpi Matter statici) come forme
+   * geometriche semplici, per poter escludere gli slot di spawn che ci
+   * ricadono dentro.
+   * @param {Phaser.Tilemaps.Tilemap} map
+   * @returns {Array<{type:'rect'|'polygon'|'ellipse', ...}>}
+   * @private
+   */
+  _collectCollisionShapes(map) {
+    const layer = map.getObjectLayer('collision');
+    if (!layer) return [];
+
+    const shapes = [];
+    for (const obj of layer.objects) {
+      if (!obj.polygon && (obj.width ?? 0) < 2 && (obj.height ?? 0) < 2) continue;
+
+      if (obj.polygon) {
+        shapes.push({
+          type: 'polygon',
+          points: obj.polygon.map((p) => ({ x: obj.x + p.x, y: obj.y + p.y })),
+        });
+      } else if (obj.ellipse) {
+        shapes.push({
+          type: 'ellipse',
+          cx: obj.x + (obj.width  ?? 0) / 2,
+          cy: obj.y + (obj.height ?? 0) / 2,
+          rx: (obj.width  ?? 0) / 2,
+          ry: (obj.height ?? 0) / 2,
+        });
+      } else {
+        shapes.push({
+          type: 'rect',
+          x1: obj.x, y1: obj.y,
+          x2: obj.x + (obj.width ?? 0), y2: obj.y + (obj.height ?? 0),
+        });
+      }
+    }
+    return shapes;
+  }
+
+  /**
+   * @param {number} x
+   * @param {number} y
+   * @param {Array} shapes Vedi `_collectCollisionShapes`.
+   * @returns {boolean}
+   * @private
+   */
+  _isInsideAnyShape(x, y, shapes) {
+    return shapes.some((shape) => {
+      if (shape.type === 'rect') {
+        return x >= shape.x1 && x <= shape.x2 && y >= shape.y1 && y <= shape.y2;
+      }
+      if (shape.type === 'ellipse') {
+        if (shape.rx === 0 || shape.ry === 0) return false;
+        const dx = (x - shape.cx) / shape.rx;
+        const dy = (y - shape.cy) / shape.ry;
+        return dx * dx + dy * dy <= 1;
+      }
+      // Polygon: ray casting.
+      const pts = shape.points;
+      let inside = false;
+      for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+        const xi = pts[i].x, yi = pts[i].y;
+        const xj = pts[j].x, yj = pts[j].y;
+        const intersects = (yi > y) !== (yj > y)
+          && x < (xj - xi) * (y - yi) / (yj - yi) + xi;
+        if (intersects) inside = !inside;
+      }
+      return inside;
+    });
   }
 
   /**

@@ -11,8 +11,9 @@ export const VILLAGE_CONFIG = {
     spawnTile: { x: 30, y: 22 },
     pet: {
       name: 'Nala',
-      animal: 'dog',        // 'cat' | 'dog' | 'rabbit' | 'hamster'
-      behavior: 'wander_near_home',
+      animal: 'rabbit',      // 'cat' | 'dog' | 'rabbit' | 'hamster'
+      behavior: 'follow_player', // segue sempre Cecilia, ovunque si muova
+      spriteKey: 'npc_bunny',
     },
   },
 
@@ -26,7 +27,7 @@ export const VILLAGE_CONFIG = {
       color: 'pink',          // 'pink'|'blue'|'yellow'|'green'|'purple'|'orange'
       zone: 'center',         // 'center'|'north'|'south'|'east'|'west'|'forest'
       // Nome dell'oggetto casa nell'Object Layer "houses" del TMJ (villaggio.tmj).
-      houseObjectName: 'house_cece',
+      houseObjectName: 'house_cecilia',
       nearbyObjects: [
         { type: 'flower',  variant: 'red',    offsetTile: { x: -2, y: 0 } },
         { type: 'flower',  variant: 'yellow', offsetTile: { x: -1, y: 0 } },
@@ -58,11 +59,13 @@ export const VILLAGE_CONFIG = {
         name: 'Robby',
         animal: 'dog',        // 'cat' | 'dog' | 'rabbit' | 'hamster'
         behavior: 'wander_near_home',
+        spriteKey: 'robby',
         },
         {
         name: 'Corrado',
         animal: 'cat',        // 'cat' | 'dog' | 'rabbit' | 'hamster'
         behavior: 'wander_near_home',
+        spriteKey: 'corrado',
         }
         ]
     },
@@ -105,6 +108,12 @@ export const VILLAGE_CONFIG = {
         firstDialog: 'Benvenuta a casa di Zia Debora! Cosa posso fare per te? 🛍️',
       },
       welcomeMessage: 'Casa di Zia Debora. "Ehi Cece, giochiamo?"',
+      pet: [{
+        name: 'Blue',
+        animal: 'cat',        // 'cat' | 'dog' | 'rabbit' | 'hamster'
+        behavior: 'wander_near_home',
+        spriteKey: 'blue',
+      }],
     },
   ],
 
