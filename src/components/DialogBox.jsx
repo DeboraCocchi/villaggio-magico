@@ -17,6 +17,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDialogStore }  from '@store/useDialogStore.js';
 import { usePhaserEvent }  from '../hooks/usePhaserEvent.js';
+import { emitToReact }     from '@game/utils/phaserBridge.js';
 
 /** Velocità typewriter in ms per carattere */
 const TYPEWRITER_SPEED_MS = 28;
@@ -103,7 +104,7 @@ export default function DialogBox() {
       advance();
       // Notifica Phaser se il dialogo è ora chiuso
       if (!useDialogStore.getState().isOpen) {
-        window.dispatchEvent(new CustomEvent('dialog:close'));
+        emitToReact('dialog:close');
       }
     }
   }, [isComplete, text, advance]);
@@ -111,7 +112,7 @@ export default function DialogBox() {
   // ── Chiude con Escape ──────────────────────────────────────────
   const handleClose = useCallback(() => {
     close();
-    window.dispatchEvent(new CustomEvent('dialog:close'));
+    emitToReact('dialog:close');
   }, [close]);
 
   // ── Tastiera ───────────────────────────────────────────────────

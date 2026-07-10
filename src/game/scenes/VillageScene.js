@@ -2,6 +2,7 @@
  * @file VillageScene.js
  * Carica villaggio.tmj con tutti i tileset.
  * Fix v3: layer creati per indice numerico (Phaser 3.90 non accetta LayerData diretto).
+ * Fix v4: aggiunto supporto porte → interni (Object Layer "doors" + InteriorScene).
  */
 
 import Phaser from 'phaser'
@@ -10,12 +11,13 @@ import { DayNightSystem } from '../systems/DayNightSystem.js'
 import { ItemManager }    from '../managers/ItemManager.js'
 import { NPCManager }     from '../managers/NPCManager.js'
 import { PetManager }     from '../managers/PetManager.js'
-import { listenFromReact } from '../utils/phaserBridge.js'
+import { listenFromReact, emitToReact } from '../utils/phaserBridge.js'
 import { QuestManager } from '../managers/QuestManager.js'
 
 const PLAYER_SPEED = 120
 const TILE_SIZE    = 32
 const PLAYER_FACING_STORAGE_KEY = 'villaggio-player-facing'
+const RETURN_POSITION_REGISTRY_KEY = 'villaggio-return-position'
 
 export class VillageScene extends Phaser.Scene {
   constructor() {
@@ -34,6 +36,11 @@ export class VillageScene extends Phaser.Scene {
     this._dialogOpen   = false
     this._dialogCleanup = []
     this.playerFacing = 'down'
+
+    // ── Stato porte/interni ────────────────────────────────────────────────
+    this.isTransitioning = false
+    this._doorSensors = []
+    this._doorCollisionHandler = null
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -379,6 +386,15 @@ export class VillageScene extends Phaser.Scene {
     // completamento quest quando NPC.interact() chiama onNpcTalk().
     this.questManager = new QuestManager(this)
 
+    // ── Porte verso gli interni delle case ───────────────────────────────────
+    // Legge l'Object Layer "doors" del TMJ: un rettangolo per ogni porta, con
+    // Custom Properties "targetInterior" (string), "spawnX"/"spawnY" (int).
+    this._setupDoors(map)
+
+    // Al risveglio (uscita dall'interno), riposiziona il player e riattiva
+    // la scena — vedi InteriorScene.exitHouse().
+    this.events.on('wake', this._onWake, this)
+
     if (import.meta.env.DEV) window.__scene = this // eslint-disable-line -- TEMP debug hook, rimosso a fine verifica
 
     // ── Camera ────────────────────────────────────────────────────────────────
@@ -429,6 +445,13 @@ export class VillageScene extends Phaser.Scene {
         this.player.anims.stop()
         this.player.setFrame(idleFrameByFacing[this.playerFacing] ?? 1)
       }
+      return
+    }
+
+    // Durante il fade verso/da un interno, il player resta fermo così non
+    // "scivola" mentre lo schermo è nero.
+    if (this.isTransitioning) {
+      this.player.setVelocity(0, 0)
       return
     }
 
@@ -518,6 +541,143 @@ export class VillageScene extends Phaser.Scene {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
+  // ── Porte → interni ────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Legge l'Object Layer "doors" del TMJ e crea un sensor Matter (non
+   * collidente, solo overlap) per ogni porta. Ogni oggetto deve avere le
+   * Custom Properties:
+   *   - targetInterior (string): chiave in data/interiors.js
+   *   - spawnX, spawnY (int): posizione del player dentro l'interno
+   *
+   * @param {Phaser.Tilemaps.Tilemap} map
+   * @private
+   */
+  _setupDoors(map) {
+    const doorsLayer = map.getObjectLayer('doors')
+    if (!doorsLayer) {
+      console.warn('[VillageScene] Object Layer "doors" non trovato: nessuna casa sarà accessibile')
+      return
+    }
+
+    for (const obj of doorsLayer.objects) {
+      const props = this._objectProps(obj)
+      const targetInterior = props.targetInterior
+
+      if (!targetInterior) {
+        console.warn(`[VillageScene] Oggetto porta senza proprietà "targetInterior" (id ${obj.id})`)
+        continue
+      }
+
+      const sensor = this.matter.add.rectangle(
+        obj.x + (obj.width  ?? TILE_SIZE) / 2,
+        obj.y + (obj.height ?? TILE_SIZE) / 2,
+        obj.width  ?? TILE_SIZE,
+        obj.height ?? TILE_SIZE,
+        { isSensor: true, isStatic: true, label: 'door' }
+      )
+
+      // Attacchiamo i dati della porta direttamente al body Matter, come
+      // già fatto altrove nel progetto per estendere oggetti Phaser/Matter.
+      sensor.doorData = {
+        targetInterior,
+        spawnX: Number(props.spawnX) || 0,
+        spawnY: Number(props.spawnY) || 0,
+      }
+
+      this._doorSensors.push(sensor)
+    }
+
+    if (this._doorSensors.length === 0) return
+
+    this._doorCollisionHandler = (event) => {
+      if (this.isTransitioning) return
+      for (const pair of event.pairs) {
+        const bodies = [pair.bodyA, pair.bodyB]
+        const door = bodies.find(b => b.label === 'door')
+        const isPlayer = bodies.includes(this.player.body)
+        if (door && isPlayer) {
+          this.enterHouse(door.doorData)
+          break
+        }
+      }
+    }
+
+    this.matter.world.on('collisionstart', this._doorCollisionHandler)
+  }
+
+  /**
+   * Converte le Custom Properties grezze di un oggetto Tiled in un
+   * dizionario semplice { nome: valore }.
+   * @param {object} obj oggetto grezzo da map.getObjectLayer(...).objects
+   * @returns {Record<string, any>}
+   * @private
+   */
+  _objectProps(obj) {
+    const out = {}
+    for (const p of obj.properties ?? []) out[p.name] = p.value
+    return out
+  }
+
+  /**
+   * Avvia la transizione verso l'interno di una casa: fade to black,
+   * mette in sleep VillageScene (stato/oggetti restano in memoria) e
+   * lancia InteriorScene sopra.
+   *
+   * @param {{targetInterior: string, spawnX: number, spawnY: number}} doorData
+   */
+  enterHouse(doorData) {
+    if (this.isTransitioning) return
+    this.isTransitioning = true
+    this.player.setVelocity(0, 0)
+
+    // Ricorda dove si trovava il player (leggermente scostato dalla porta
+    // al risveglio) per farlo ricomparire nello stesso punto uscendo.
+    this.registry.set(RETURN_POSITION_REGISTRY_KEY, {
+      x: this.player.x,
+      y: this.player.y,
+      facing: this.playerFacing,
+    })
+
+    emitToReact('scene:transition', { entering: doorData.targetInterior })
+
+    this.cameras.main.fadeOut(300, 0, 0, 0)
+    this.cameras.main.once('camerafadeoutcomplete', () => {
+      this.scene.setVisible(false)
+      this.scene.sleep()
+      this.scene.launch('InteriorScene', {
+        interiorId: doorData.targetInterior,
+        spawnX: doorData.spawnX,
+        spawnY: doorData.spawnY,
+      })
+    })
+  }
+
+  /**
+   * Chiamato quando VillageScene si risveglia (il player è uscito da una
+   * casa). Riposiziona il player scostato dalla porta da cui era entrato,
+   * per evitare che il sensore lo faccia rientrare subito in loop.
+   * @param {Phaser.Scenes.Systems} sys
+   * @param {object} [data]
+   * @private
+   */
+  _onWake(sys, data) {
+    this.isTransitioning = false
+    this.scene.setVisible(true)
+
+    const stored = this.registry.get(RETURN_POSITION_REGISTRY_KEY)
+    if (stored) {
+      const offsetByFacing = { up: [0, 24], down: [0, -24], left: [24, 0], right: [-24, 0] }
+      const [ox, oy] = offsetByFacing[stored.facing] ?? [0, 24]
+      this.player.setPosition(stored.x + ox, stored.y + oy)
+      this.playerFacing = stored.facing
+    }
+
+    this.cameras.main.fadeIn(300, 0, 0, 0)
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
   /**
    * Ferma timer e audio quando la scena viene fermata/riavviata, per
    * evitare timer orfani e tracce musicali sovrapposte.
@@ -531,6 +691,13 @@ export class VillageScene extends Phaser.Scene {
     this.questManager?.destroy()   // ← NUOVA
     for (const cleanup of this._dialogCleanup) cleanup()
     this._dialogCleanup = []
+
+    if (this._doorCollisionHandler) {
+      this.matter.world.off('collisionstart', this._doorCollisionHandler)
+      this._doorCollisionHandler = null
+    }
+    this.events.off('wake', this._onWake, this)
+    this._doorSensors = []
   }
   // ─────────────────────────────────────────────────────────────────────────
   /**

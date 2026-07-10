@@ -6,6 +6,7 @@ import Phaser from 'phaser';
 import { PreloadScene } from './scenes/PreloadScene.js';
 import { AvatarScene }  from './scenes/AvatarScene.js';
 import { VillageScene } from './scenes/VillageScene.js';
+import { InteriorScene } from './scenes/InteriorScene.js';
 
 export const phaserConfig = {
   type: Phaser.AUTO,
@@ -29,7 +30,7 @@ export const phaserConfig = {
   },
 
   // PreloadScene → VillageScene (AvatarScene saltata per ora)
-  scene: [PreloadScene, VillageScene, AvatarScene],
+  scene: [PreloadScene, VillageScene, AvatarScene, InteriorScene],
 
   pixelArt:    true,
   roundPixels: true,
