@@ -105,6 +105,22 @@ export class AudioManager {
   }
 
   /**
+   * Silenzia o riattiva tutte le tracce musicali.
+   *
+   * @param {boolean} enabled - true per riprodurre, false per silenziare.
+   * @returns {void}
+   */
+  setMusicEnabled(enabled) {
+    for (const track of this._tracks.values()) {
+      if (enabled) {
+        if (!track.isPlaying) track.play();
+      } else {
+        track.stop();
+      }
+    }
+  }
+
+  /**
    * Ferma e distrugge tutte le tracce gestite. Chiamare da
    * `scene.shutdown()` per evitare audio residuo tra un riavvio e l'altro.
    * @returns {void}

@@ -35,8 +35,8 @@ const SEASON_EMOJI = {
  * @returns {JSX.Element}
  */
 export default function HUD() {
-  const { name, coins, hearts, currentTime, season,
-          setCoins, setHearts, setTime, setSeason } = usePlayerStore();
+  const { name, coins, hearts, currentTime, season, musicEnabled,
+          setCoins, setHearts, setTime, setSeason, setMusicEnabled } = usePlayerStore();
 
   // ── Bridge: eventi Phaser → aggiornamento store ────────────────
   usePhaserEvent('player:coinCollected', ({ total }) => setCoins(total));
@@ -66,6 +66,26 @@ export default function HUD() {
 
         {/* Ora */}
         <StatChip icon="🕐" value={currentTime} label="" />
+
+        {/* Musica toggle */}
+        <button
+          onClick={() => {
+            setMusicEnabled(!musicEnabled);
+            window.dispatchEvent(new CustomEvent('audio:toggleMusic', {
+              detail: { enabled: !musicEnabled }
+            }));
+          }}
+          style={{
+            ...styles.chip,
+            cursor: 'pointer',
+            border: '1.5px solid ' + (musicEnabled ? '#f48fb1' : '#999'),
+            opacity: musicEnabled ? 1 : 0.5,
+            transition: 'all 200ms ease',
+          }}
+          aria-label={musicEnabled ? 'Disattiva musica' : 'Attiva musica'}
+        >
+          <span>{musicEnabled ? '🔊' : '🔇'}</span>
+        </button>
       </div>
     </div>
   );

@@ -12,16 +12,18 @@ import { create } from 'zustand';
 
 /**
  * @typedef {Object} PlayerState
- * @property {string}   name        - Nome della giocatrice.
- * @property {number}   coins       - Numero di monete campana correnti.
- * @property {number}   hearts      - Cuori vita/amicizia (0–5).
- * @property {string}   currentTime - Ora nel gioco (es. '14:30').
- * @property {string}   season      - Stagione corrente ('primavera'|'estate'|'autunno'|'inverno').
- * @property {Function} setCoins    - Imposta le monete.
- * @property {Function} setHearts   - Imposta i cuori.
- * @property {Function} setTime     - Imposta l'ora di gioco.
- * @property {Function} setSeason   - Imposta la stagione.
- * @property {Function} setName     - Imposta il nome della giocatrice.
+ * @property {string}   name           - Nome della giocatrice.
+ * @property {number}   coins          - Numero di monete campana correnti.
+ * @property {number}   hearts         - Cuori vita/amicizia (0–5).
+ * @property {string}   currentTime    - Ora nel gioco (es. '14:30').
+ * @property {string}   season         - Stagione corrente ('primavera'|'estate'|'autunno'|'inverno').
+ * @property {boolean}  musicEnabled   - Musica abilitata o meno.
+ * @property {Function} setCoins       - Imposta le monete.
+ * @property {Function} setHearts      - Imposta i cuori.
+ * @property {Function} setTime        - Imposta l'ora di gioco.
+ * @property {Function} setSeason      - Imposta la stagione.
+ * @property {Function} setName        - Imposta il nome della giocatrice.
+ * @property {Function} setMusicEnabled - Attiva/disattiva la musica.
  */
 
 /**
@@ -35,6 +37,7 @@ export const usePlayerStore = create((set) => ({
   hearts:      3,
   currentTime: '08:00',
   season:      'primavera',
+  musicEnabled: true,
 
   /** @param {string} name */
   setName:   (name)   => set({ name }),
@@ -50,4 +53,7 @@ export const usePlayerStore = create((set) => ({
 
   /** @param {string} season */
   setSeason: (season) => set({ season }),
+
+  /** @param {boolean} enabled */
+  setMusicEnabled: (enabled) => set({ musicEnabled: enabled }),
 }));

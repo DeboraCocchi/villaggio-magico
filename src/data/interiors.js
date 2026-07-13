@@ -17,9 +17,11 @@
 export const INTERIORS = {
   interior_casa_cecilia: {
     tilemapKey: 'interior_casa_cecilia',
-    tilemapPath: 'assets/interiors/house_cecilia.tmj',
+    tilemapPath: 'assets/interiors/house_cece.tmj',
     tilesetImages: [
       { name: 'Pixel Interiors 32x32pxl', key: 'pixel_interiors_base', path: 'assets/tilesets/Pixel Interiors 32x32pxl.png' },
+      { name: 'TILESET INDOORS +Bathroom', key: 'pixel_interiors_bathroom', path: 'assets/tilesets/TILESET INDOORS +Bathroom.png' },
+      {name: 'InteriorTilesLITE (1)', key: 'interior_tiles_lite', path: 'assets/tilesets/InteriorTilesLITE (1).png'},
     ],
   },
 

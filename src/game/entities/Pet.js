@@ -77,7 +77,7 @@ export class Pet extends Phaser.GameObjects.Container {
     }).setOrigin(0.5);
 
     this.add([this.sprite, nameTag]);
-    this.setDepth(y);
+    this.setDepth(y + 151);
 
     scene.add.existing(this);
   }
@@ -97,7 +97,7 @@ export class Pet extends Phaser.GameObjects.Container {
     } else {
       this._updateWanderNearHome(delta);
     }
-    this.setDepth(this.y);
+    this.setDepth(this.y + 151);
   }
 
   /** @private */

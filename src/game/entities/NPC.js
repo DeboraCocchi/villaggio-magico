@@ -89,7 +89,7 @@ export class NPC extends Phaser.GameObjects.Container {
     }).setOrigin(0.5).setVisible(false);
 
     this.add([sprite, nameTag, this._prompt]);
-    this.setDepth(20);
+    this.setDepth(161);
 
     scene.add.existing(this);
   }

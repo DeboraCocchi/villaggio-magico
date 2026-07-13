@@ -379,6 +379,9 @@ export class VillageScene extends Phaser.Scene {
     this._dialogCleanup = [
       listenFromReact('dialog:open',  () => { this._dialogOpen = true }),
       listenFromReact('dialog:close', () => { this._dialogOpen = false }),
+      listenFromReact('audio:toggleMusic', ({ enabled }) => {
+        this.audioManager.setMusicEnabled(enabled)
+      }),
     ]
 
     // ── Sistema missioni ───────────────────────────────────────────
