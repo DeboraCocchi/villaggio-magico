@@ -14,28 +14,50 @@
  * in VillageScene.js). Se il tileset del .tmj ha lo stesso nome della key,
  * puoi ometterlo.
  */
-export const INTERIORS = {
-  interior_casa_cecilia: {
-    tilemapKey: 'interior_casa_cecilia',
-    tilemapPath: 'assets/interiors/house_cece.tmj',
-    tilesetImages: [
-      { name: 'Pixel Interiors 32x32pxl', key: 'pixel_interiors_base', path: 'assets/tilesets/Pixel Interiors 32x32pxl.png' },
-      { name: 'TILESET INDOORS +Bathroom', key: 'pixel_interiors_bathroom', path: 'assets/tilesets/TILESET INDOORS +Bathroom.png' },
-      {name: 'InteriorTilesLITE (1)', key: 'interior_tiles_lite', path: 'assets/tilesets/InteriorTilesLITE (1).png'},
-    ],
+/**
+ * I 3 tileset condivisi da tutti gli interni.
+ * key  = chiave texture Phaser (usata in this.load.image)
+ * path = percorso del PNG dentro public/
+ * name = nome ESATTO del tileset nel .tmj
+ * @type {{ name: string, key: string, path: string }[]}
+ */
+const SHARED_INTERIOR_TILESETS = [
+  {
+    name: 'InteriorTilesLITE (1)',
+    key:  'interior_lite',
+    path: 'assets/tilesets/interior_lite.png',
   },
-
-  // interior_casa_fucsia: {
-  //   tilemapKey: 'interior_casa_fucsia',
-  //   tilemapPath: 'assets/interiors/casa_fucsia.tmj',
-  //   tilesetImages: [
-  //     { name: 'interior_base', key: 'interior_base', path: 'assets/tilesets/interior_base.png' },
-  //   ],
-  // },
-
-
-  // Aggiungi qui le altre case man mano che crei i relativi file .tmj.
-  // La chiave (es. "interior_casa_verde") è lo stesso valore che devi
-  // scrivere nella proprietà "targetInterior" degli oggetti dell'Object
-  // Layer "doors" in villaggio.tmj.
+  {
+    name: 'TILESET INDOORS +Bathroom',
+    key:  'interior_indoors',
+    path: 'assets/tilesets/interior_indoors.png',
+  },
+  {
+    name: 'Pixel Interiors 32x32pxl',
+    key:  'interior_pixel',
+    path: 'assets/tilesets/interior_pixel.png',
+  },
+]
+ 
+export const INTERIORS = {
+  interior_anna: {
+    tilemapKey:    'interior_anna',
+    tilemapPath:   'assets/interiors/house_anna.tmj',
+    tilesetImages: SHARED_INTERIOR_TILESETS,
+  },
+  interior_cece: {
+    tilemapKey:    'interior_cece',
+    tilemapPath:   'assets/interiors/house_cece.tmj',
+    tilesetImages: SHARED_INTERIOR_TILESETS,
+  },
+  interior_daniele: {
+    tilemapKey:    'interior_daniele',
+    tilemapPath:   'assets/interiors/house_daniele.tmj',
+    tilesetImages: SHARED_INTERIOR_TILESETS,
+  },
+  interior_debora: {
+    tilemapKey:    'interior_debora',
+    tilemapPath:   'assets/interiors/house_debora.tmj',
+    tilesetImages: SHARED_INTERIOR_TILESETS,
+  },
 }

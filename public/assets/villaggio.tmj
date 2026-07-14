@@ -547,7 +547,7 @@
          "name":"baracchino",
          "opacity":1,
          "type":"tilelayer",
-         "visible":true,
+         "visible":false,
          "width":48,
          "x":0,
          "y":0
@@ -583,7 +583,7 @@
          "name":"fruits1",
          "opacity":1,
          "type":"tilelayer",
-         "visible":true,
+         "visible":false,
          "width":48,
          "x":0,
          "y":0
@@ -619,7 +619,7 @@
          "name":"fruits2",
          "opacity":1,
          "type":"tilelayer",
-         "visible":true,
+         "visible":false,
          "width":48,
          "x":0,
          "y":0
@@ -710,7 +710,7 @@
          "name":"case",
          "opacity":1,
          "type":"group",
-         "visible":true,
+         "visible":false,
          "x":0,
          "y":0
         }, 
@@ -3457,7 +3457,7 @@
                  "value":""
                 }],
          "type":"objectgroup",
-         "visible":true,
+         "visible":false,
          "x":0,
          "y":0
         }, 
@@ -4123,7 +4123,7 @@
                 }],
          "opacity":1,
          "type":"objectgroup",
-         "visible":true,
+         "visible":false,
          "x":0,
          "y":0
         }, 
@@ -5415,7 +5415,7 @@
                         {
                          "name":"targetInterior",
                          "type":"string",
-                         "value":"interior_casa_cecilia"
+                         "value":"interior_cece"
                         }],
                  "rotation":0,
                  "type":"door",
@@ -5423,6 +5423,102 @@
                  "width":32,
                  "x":512,
                  "y":128
+                }, 
+                {
+                 "height":64,
+                 "id":537,
+                 "name":"",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"spawnX",
+                         "type":"int",
+                         "value":290
+                        }, 
+                        {
+                         "name":"spawnY",
+                         "type":"int",
+                         "value":544
+                        }, 
+                        {
+                         "name":"targetInterior",
+                         "type":"string",
+                         "value":"interior_anna"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":32,
+                 "x":960,
+                 "y":224
+                }, 
+                {
+                 "height":64,
+                 "id":540,
+                 "name":"",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"spawnX",
+                         "type":"int",
+                         "value":320
+                        }, 
+                        {
+                         "name":"spawnY",
+                         "type":"int",
+                         "value":320
+                        }, 
+                        {
+                         "name":"targetInterior",
+                         "type":"string",
+                         "value":"interior_debora"
+                        }],
+                 "rotation":0,
+                 "type":"door",
+                 "visible":true,
+                 "width":32,
+                 "x":1120,
+                 "y":640
+                }, 
+                {
+                 "height":64,
+                 "id":542,
+                 "name":"",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"spawnX",
+                         "type":"int",
+                         "value":128
+                        }, 
+                        {
+                         "name":"spawnY",
+                         "type":"int",
+                         "value":416
+                        }, 
+                        {
+                         "name":"targetInterior",
+                         "type":"string",
+                         "value":"interior_daniele"
+                        }],
+                 "rotation":0,
+                 "type":"door",
+                 "visible":true,
+                 "width":32,
+                 "x":320,
+                 "y":672
+                }, 
+                {
+                 "height":0,
+                 "id":543,
+                 "name":"",
+                 "opacity":1,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":224,
+                 "y":544
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -5494,7 +5590,7 @@
          "y":0
         }],
  "nextlayerid":44,
- "nextobjectid":537,
+ "nextobjectid":544,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.12.2",
