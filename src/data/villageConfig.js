@@ -103,7 +103,7 @@ export const VILLAGE_CONFIG = {
         { type: 'crate',  variant: 'wood', offsetTile: { x:  2, y: 1 } },
       ],
       npc: {
-        personality: 'allegra e intraprendente, sempre con nuove offerte',
+        personality: 'allegra e intraprendente, sempre con nuove idee per giocare e divertirsi',
         catchphrase: 'Affare fatto!',
         firstDialog: 'Benvenuta a casa di Zia Debora! Cosa posso fare per te? 🛍️',
       },

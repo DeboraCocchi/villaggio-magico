@@ -17,9 +17,53 @@
 import Phaser from 'phaser'
 import { emitToReact } from '../utils/phaserBridge.js'
 import { INTERIORS } from '../../data/interiors.js'
+import { VILLAGE_CONFIG } from '../../data/villageConfig.js'
+import { NPC } from '../entities/NPC.js'
+import { Pet } from '../entities/Pet.js'
 
 const TILE_SIZE = 32
 const PLAYER_SPEED = 100
+const INTERACT_KEY = 'E'
+
+const INTERIOR_RESIDENTS = {
+  interior_cece: {
+    npcs: [
+      {
+        id: 'mamma_chiara',
+        residentName: 'Mamma Chiara',
+        color: 'pink',
+        npc: {
+          personality: 'dolce e accogliente, ha sempre voglia di un abbraccio',
+          catchphrase: 'Bentornata Cece!'
+        }
+      }
+    ],
+    pets: []
+  },
+  interior_anna: {
+    npcs: [
+      { inhabitantId: 'nonna_anna' },
+      {
+        id: 'papa_ale',
+        residentName: 'Ale',
+        color: 'blue',
+        npc: {
+          personality: 'calmo e giocherellone, ama fare battute leggere',
+          catchphrase: 'Che bello stare insieme!'
+        }
+      }
+    ],
+    pets: []
+  },
+  interior_debora: {
+    npcs: [{ inhabitantId: 'zia_debora' }],
+    pets: [{ ownerId: 'zia_debora', petName: 'Blue' }]
+  },
+  interior_daniele: {
+    npcs: [{ inhabitantId: 'nonno_daniele' }],
+    pets: [{ ownerId: 'nonno_daniele', petName: 'Corrado' }]
+  }
+}
 
 export class InteriorScene extends Phaser.Scene {
   constructor() {
@@ -33,6 +77,11 @@ export class InteriorScene extends Phaser.Scene {
     this._exitCollisionHandler = null
     this.interiorId = null
     this.config = null
+    this._collisionAabbs = []
+    this._indoorNpcs = []
+    this._indoorPets = []
+    this._nearestInRange = null
+    this._interactKey = null
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -111,9 +160,30 @@ export class InteriorScene extends Phaser.Scene {
 
     // ── Collisioni interne (muri, mobili) ────────────────────────────────────
     const collisionLayer = map.getObjectLayer('collision')
+    this._collisionAabbs = []
     if (collisionLayer) {
       for (const obj of collisionLayer.objects) {
         if (!obj.polygon && (obj.width ?? 0) < 2 && (obj.height ?? 0) < 2) continue
+
+        if (obj.polygon) {
+          const points = obj.polygon.map((p) => ({ x: obj.x + p.x, y: obj.y + p.y }))
+          const xs = points.map((p) => p.x)
+          const ys = points.map((p) => p.y)
+          this._collisionAabbs.push({
+            x: Math.min(...xs),
+            y: Math.min(...ys),
+            w: Math.max(...xs) - Math.min(...xs),
+            h: Math.max(...ys) - Math.min(...ys),
+          })
+        } else {
+          this._collisionAabbs.push({
+            x: obj.x,
+            y: obj.y,
+            w: obj.width ?? TILE_SIZE,
+            h: obj.height ?? TILE_SIZE,
+          })
+        }
+
         this.matter.add.rectangle(
           obj.x + (obj.width  ?? TILE_SIZE) / 2,
           obj.y + (obj.height ?? TILE_SIZE) / 2,
@@ -144,6 +214,8 @@ export class InteriorScene extends Phaser.Scene {
     if (this.textures.exists('player')) {
       this.player.setFrame(idleFrameByFacing[this.playerFacing] ?? 1)
     }
+
+    this._spawnInteriorResidents()
 
     // ── Uscita verso il villaggio ─────────────────────────────────────────────
     this._setupExit(map)
@@ -183,6 +255,134 @@ export class InteriorScene extends Phaser.Scene {
       down:  Phaser.Input.Keyboard.KeyCodes.S,
       left:  Phaser.Input.Keyboard.KeyCodes.A,
       right: Phaser.Input.Keyboard.KeyCodes.D,
+    })
+    this._interactKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes[INTERACT_KEY])
+  }
+
+  _spawnInteriorResidents() {
+    const residents = INTERIOR_RESIDENTS[this.interiorId]
+    if (!residents) return
+
+    const npcSpecs = residents.npcs ?? []
+    const petSpecs = residents.pets ?? []
+    const totalEntities = npcSpecs.length + petSpecs.length
+    const spawnPoints = this._resolveSpawnPoints(totalEntities)
+
+    let i = 0
+    for (const spec of npcSpecs) {
+      const inhabitant = this._resolveNpcSpec(spec)
+      if (!inhabitant) continue
+
+      const point = spawnPoints[i++] ?? this._findFreePoint(this.spawnX, this.spawnY - 48)
+      this._indoorNpcs.push(new NPC(this, point.x, point.y, inhabitant))
+    }
+
+    for (const spec of petSpecs) {
+      const petConfig = this._resolvePetSpec(spec)
+      if (!petConfig) continue
+
+      const point = spawnPoints[i++] ?? this._findFreePoint(this.spawnX + 32, this.spawnY - 48)
+      this._indoorPets.push(new Pet(
+        this,
+        point.x,
+        point.y,
+        { ...petConfig, behavior: 'wander_near_home' },
+        { x: point.x, y: point.y }
+      ))
+    }
+  }
+
+  _resolveNpcSpec(spec) {
+    if (spec.inhabitantId) {
+      const inhabitant = VILLAGE_CONFIG.inhabitants.find((i) => i.id === spec.inhabitantId)
+      if (!inhabitant) {
+        console.warn(`[InteriorScene] Inhabitant "${spec.inhabitantId}" non trovato in villageConfig`)
+        return null
+      }
+      return inhabitant
+    }
+    return spec
+  }
+
+  _resolvePetSpec(spec) {
+    const owner = VILLAGE_CONFIG.inhabitants.find((i) => i.id === spec.ownerId)
+    const pet = owner?.pet?.find((p) => p.name?.toLowerCase() === spec.petName?.toLowerCase())
+    if (!pet) {
+      console.warn(`[InteriorScene] Pet "${spec.petName}" non trovato per owner "${spec.ownerId}"`)
+      return null
+    }
+    return pet
+  }
+
+  _resolveSpawnPoints(count) {
+    const baseX = this.map?.widthInPixels ? this.map.widthInPixels / 2 : this.spawnX
+    const baseY = this.map?.heightInPixels ? this.map.heightInPixels / 2 : this.spawnY
+    const offsets = [
+      [0, -36],
+      [-40, -16],
+      [40, -16],
+      [-56, 28],
+      [56, 28],
+      [0, 48],
+    ]
+
+    const points = []
+    for (let idx = 0; idx < count; idx++) {
+      const [ox, oy] = offsets[idx] ?? [0, 0]
+      points.push(this._findFreePoint(baseX + ox, baseY + oy, points))
+    }
+    return points
+  }
+
+  _findFreePoint(targetX, targetY, reserved = []) {
+    const candidates = []
+    candidates.push({ x: targetX, y: targetY })
+
+    const rings = [20, 36, 52, 68, 84, 100]
+    for (const radius of rings) {
+      for (let step = 0; step < 12; step++) {
+        const angle = (Math.PI * 2 * step) / 12
+        candidates.push({
+          x: targetX + Math.cos(angle) * radius,
+          y: targetY + Math.sin(angle) * radius,
+        })
+      }
+    }
+
+    const minX = 14
+    const minY = 14
+    const maxX = (this.map?.widthInPixels ?? 0) - 14
+    const maxY = (this.map?.heightInPixels ?? 0) - 14
+
+    const isReserved = (x, y) => reserved.some((p) => Phaser.Math.Distance.Between(x, y, p.x, p.y) < 22)
+
+    for (const point of candidates) {
+      const x = Phaser.Math.Clamp(point.x, minX, maxX)
+      const y = Phaser.Math.Clamp(point.y, minY, maxY)
+      if (isReserved(x, y)) continue
+      if (!this._isBlockedByCollision(x, y)) return { x, y }
+    }
+
+    return {
+      x: Phaser.Math.Clamp(targetX, minX, maxX),
+      y: Phaser.Math.Clamp(targetY, minY, maxY),
+    }
+  }
+
+  _isBlockedByCollision(x, y) {
+    const halfW = 10
+    const halfH = 12
+    const left = x - halfW
+    const right = x + halfW
+    const top = y - halfH
+    const bottom = y + halfH
+
+    return this._collisionAabbs.some((box) => {
+      const bx1 = box.x
+      const by1 = box.y
+      const bx2 = box.x + box.w
+      const by2 = box.y + box.h
+      return left < bx2 && right > bx1 && top < by2 && bottom > by1
     })
   }
 
@@ -244,8 +444,10 @@ export class InteriorScene extends Phaser.Scene {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  update() {
+  update(_time, delta) {
     if (!this.player) return
+
+    const frameDelta = delta ?? this.game.loop.delta
 
     const idleFrameByFacing = { down: 1, left: 4, right: 7, up: 10 }
 
@@ -290,10 +492,34 @@ export class InteriorScene extends Phaser.Scene {
         this.player.setFrame(idleFrameByFacing[this.playerFacing] ?? 1)
       }
     }
+
+    this._nearestInRange = null
+    for (const npc of this._indoorNpcs) {
+      npc.update(frameDelta)
+      if (npc.updateProximity(this.player.x, this.player.y)) {
+        this._nearestInRange = npc
+      }
+    }
+
+    if (this._interactKey && Phaser.Input.Keyboard.JustDown(this._interactKey)) {
+      this._nearestInRange?.interact()
+    }
+
+    for (const pet of this._indoorPets) {
+      pet.update(frameDelta, this.player.x, this.player.y, this.playerFacing)
+    }
   }
 
   // ─────────────────────────────────────────────────────────────────────────
   shutdown() {
+    for (const npc of this._indoorNpcs) npc.destroy()
+    this._indoorNpcs = []
+
+    for (const pet of this._indoorPets) pet.destroy()
+    this._indoorPets = []
+
+    this._nearestInRange = null
+
     if (this._exitCollisionHandler) {
       this.matter.world.off('collisionstart', this._exitCollisionHandler)
       this._exitCollisionHandler = null

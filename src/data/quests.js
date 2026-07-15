@@ -110,9 +110,9 @@ export const QUESTS = [
   // ── Nonno Daniele → consegna a Nonna Anna ─────────────────────
   {
     id:          'q03_funghetti_per_il_risotto',
-    giverNpc:    'nonno_daniele',
+    giverNpc:    'nonna_anna',
     title:       'Funghetti per il risotto 🍄',
-    description: 'Il nonno ha voglia del risotto ai funghi della nonna! '
+    description: 'La nonna ha voglia del risotto ai funghi! '
                + 'Raccogli i funghetti e portali a Nonna Anna.',
     steps: [
       {
@@ -129,12 +129,12 @@ export const QUESTS = [
     ],
     offerDialog: [
       'Psst, Cecilia mia... 🍄',
-      'Ho una voglia matta del risotto della nonna!',
-      'Trovi 3 funghetti e glieli porti tu?',
+      'Ho una voglia matta del risotto ai funghi!',
+      'Trovi 3 funghetti e me li porti?',
     ],
     completionDialog: [
       'Funghetti freschi! Che bello! 🍄',
-      'Stasera risotto per tutti, nonno compreso.',
+      'Stasera risotto per tutti, babbo compreso.',
       'Sei un tesoro, tieni le tue campane! 🔔',
     ],
     reward:  { coins: 120 },
@@ -152,8 +152,8 @@ export const QUESTS = [
       {
         type:   'collect',
         target: 'shell',
-        amount: 4,
-        hint:   'Cerca 4 conchiglie 🐚 sulla spiaggia a sud!',
+        amount: 6,
+        hint:   'Cerca 6 conchiglie 🐚 sulla spiaggia a sud!',
       },
       {
         type:   'talk',
@@ -163,7 +163,7 @@ export const QUESTS = [
     ],
     offerDialog: [
       'Ehi Cece, offerta speciale! 🐚',
-      '4 conchiglie in cambio di campane sonanti.',
+      '6 conchiglie in cambio di campane sonanti.',
       'E ti faccio pure una collana. Affare fatto?',
     ],
     completionDialog: [
@@ -171,7 +171,7 @@ export const QUESTS = [
       'La collana sarà bellissima, come te!',
       'Campane per la mia socia. Affare fatto! 🔔',
     ],
-    reward:  { coins: 90, item: 'collana_di_conchiglie' },
+    reward:  { coins: 120, item: 'collana_di_conchiglie' },
     seasons: ['estate'],
   },
 
