@@ -346,7 +346,7 @@
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3999, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2147483786, 0, 0, 3999, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4007, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1237,6 +1237,53 @@
         }, 
         {
          "draworder":"topdown",
+         "id":23,
+         "name":"magazzino",
+         "objects":[
+                {
+                 "height":30.7742809076361,
+                 "id":63,
+                 "name":"",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"magazzino",
+                         "type":"bool",
+                         "value":false
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":25.4400722169792,
+                 "x":386.935291945345,
+                 "y":353.699068565098
+                }, 
+                {
+                 "height":14.3613310902302,
+                 "id":64,
+                 "name":"",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"magazzino",
+                         "type":"bool",
+                         "value":false
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":27.9020146895901,
+                 "x":66.0621230150589,
+                 "y":178.901153009725
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
          "id":15,
          "name":"exit",
          "objects":[
@@ -1258,8 +1305,8 @@
          "x":0,
          "y":0
         }],
- "nextlayerid":23,
- "nextobjectid":63,
+ "nextlayerid":24,
+ "nextobjectid":65,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.12.2",
