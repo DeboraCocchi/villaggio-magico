@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { getNextNpcDialog } from '@api/dialogueAI.js';
 import { emitToReact } from '../utils/phaserBridge.js';
 import { usePlayerStore } from '@store/usePlayerStore.js';
+import { getIdleFrame } from '../utils/characterSpriteLayout.js';
 
 /**
  * @file NPC.js
@@ -31,6 +32,15 @@ const COLOR_TINT = {
 /** Raggio (px mappa) entro cui compare il fumetto "premi E". */
 const INTERACT_RADIUS = 40;
 
+/** Raggio (px mappa) entro cui un NPC umano vagabonda dalla sua posizione di spawn. */
+const NPC_WANDER_RADIUS = 120;
+/** Velocità (px/s) durante il vagabondare. */
+const NPC_WANDER_SPEED = 45;
+/** Distanza (px) sotto cui l'NPC considera raggiunta la meta. */
+const NPC_ARRIVE_DIST = 8;
+/** Intervallo min/max (ms) tra una meta di vagabondaggio e la successiva. */
+const NPC_WANDER_PAUSE_MS = [2000, 5000];
+
 export class NPC extends Phaser.GameObjects.Container {
   /**
    * @param {Phaser.Scene} scene
@@ -53,11 +63,20 @@ export class NPC extends Phaser.GameObjects.Container {
     /** true mentre è in corso una richiesta di dialogo (evita doppie chiamate). */
     this._busy = false;
 
+    // Posizione di spawn: punto attorno cui l'NPC vagabondera'
+    this._homeX = x;
+    this._homeY = y;
+    this._facing = 'down';
+    this._wanderTarget = null;
+    this._wanderWaitUntil = 0;
+
     // Usa lo spritesheet dedicato (villageConfig.spriteKey) se presente;
     // altrimenti ricade sullo spritesheet del player tinto col colore
     // dell'abitante, e in ultima istanza su un rettangolo grigio.
     const spriteKey = inhabitant.spriteKey;
     const hasOwnSprite = spriteKey && scene.textures.exists(spriteKey);
+    this._animKey = hasOwnSprite ? spriteKey : null;
+    this._usesPlayerFallback = !hasOwnSprite && scene.textures.exists('player');
 
     let sprite;
     if (hasOwnSprite) {
@@ -70,6 +89,8 @@ export class NPC extends Phaser.GameObjects.Container {
     } else {
       sprite = scene.add.rectangle(0, 0, 20, 24, 0xcccccc);
     }
+    /** @type {Phaser.GameObjects.Sprite|Phaser.GameObjects.Rectangle} */
+    this._sprite = sprite;
 
     const nameTag = scene.add.text(0, -22, inhabitant.residentName, {
       fontSize:   '10px',
@@ -92,6 +113,148 @@ export class NPC extends Phaser.GameObjects.Container {
     this.setDepth(161);
 
     scene.add.existing(this);
+
+    // Corpo fisico Matter.js: corpo dinamico che collide con muri e altri NPC.
+    // Il Container (visuale) viene sincronizzato alla posizione del corpo ogni frame.
+    this._body = scene.matter.add.circle(x, y, 10, {
+      label:          'npc',
+      frictionAir:    0.995,
+      friction:       0,
+      frictionStatic: 0,
+      mass:           0.5,
+      restitution:    0,
+    });
+
+    // Cambio direzione su collisione: memorizza la normale della collisione
+    // come flag; il target di rimbalzo viene calcolato nel loop update()
+    // per evitare di modificare corpi dentro il callback fisico.
+    /** @type {{nx:number,ny:number}|null} */
+    this._pendingBounce = null;
+    this._collisionHandler = (event) => {
+      if (this._busy || this._pendingBounce) return;
+      for (const pair of event.pairs) {
+        const isA = pair.bodyA === this._body;
+        const isB = pair.bodyB === this._body;
+        if (!isA && !isB) continue;
+        // La normale punta da B verso A; se siamo il body B invertiamo
+        const n = pair.collision.normal;
+        this._pendingBounce = {
+          nx: isA ?  n.x : -n.x,
+          ny: isA ?  n.y : -n.y,
+        };
+        break;
+      }
+    };
+    scene.matter.world.on('collisionstart', this._collisionHandler);
+  }
+
+  /**
+   * Aggiorna posizione (sync col corpo fisico), vagabondaggio e animazione.
+   * Va chiamato da NPCManager ogni frame.
+   * @param {number} delta ms dall'ultimo frame
+   */
+  update(delta) { // eslint-disable-line no-unused-vars
+    // Sincronizza il container al corpo fisico Matter
+    this.x = this._body.position.x;
+    this.y = this._body.position.y;
+    this.setDepth(this.y + 161);
+
+    // Azzera la rotazione fisica (previene lo spinning da collisioni)
+    Phaser.Physics.Matter.Matter.Body.setAngularVelocity(this._body, 0);
+
+    // Se sta parlando, resta fermo
+    if (this._busy) {
+      Phaser.Physics.Matter.Matter.Body.setVelocity(this._body, { x: 0, y: 0 });
+      this._playIdle();
+      return;
+    }
+
+    // Rimbalzo da collisione: scegli target nella direzione della normale
+    if (this._pendingBounce) {
+      const { nx, ny } = this._pendingBounce;
+      this._pendingBounce = null;
+      Phaser.Physics.Matter.Matter.Body.setVelocity(this._body, { x: 0, y: 0 });
+      // Angolo di allontanamento = direzione normale ± fino a 60°
+      const bounceAngle = Math.atan2(ny, nx)
+        + (Math.random() - 0.5) * (Math.PI * 2 / 3);
+      const dist = 40 + Math.random() * 50;
+      this._wanderTarget = {
+        x: this._body.position.x + Math.cos(bounceAngle) * dist,
+        y: this._body.position.y + Math.sin(bounceAngle) * dist,
+      };
+      this._wanderWaitUntil = 0;
+    }
+
+    this._updateWander();
+  }
+
+  /** @private */
+  _updateWander() {
+    const now = this.scene.time.now;
+
+    if (!this._wanderTarget && now >= this._wanderWaitUntil) {
+      this._pickNewWanderTarget();
+    }
+
+    if (this._wanderTarget) {
+      const dx = this._wanderTarget.x - this._body.position.x;
+      const dy = this._wanderTarget.y - this._body.position.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist <= NPC_ARRIVE_DIST) {
+        this._wanderTarget = null;
+        this._wanderWaitUntil = now + Phaser.Math.Between(NPC_WANDER_PAUSE_MS[0], NPC_WANDER_PAUSE_MS[1]);
+        Phaser.Physics.Matter.Matter.Body.setVelocity(this._body, { x: 0, y: 0 });
+        this._playIdle();
+      } else {
+        Phaser.Physics.Matter.Matter.Body.setVelocity(this._body, {
+          x: (dx / dist) * NPC_WANDER_SPEED,
+          y: (dy / dist) * NPC_WANDER_SPEED,
+        });
+        const facing = Math.abs(dx) > Math.abs(dy)
+          ? (dx > 0 ? 'right' : 'left')
+          : (dy > 0 ? 'down' : 'up');
+        this._playWalk(facing);
+      }
+    } else {
+      Phaser.Physics.Matter.Matter.Body.setVelocity(this._body, { x: 0, y: 0 });
+      this._playIdle();
+    }
+  }
+
+  /** @private */
+  _pickNewWanderTarget() {
+    const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
+    const radius = Phaser.Math.FloatBetween(NPC_WANDER_RADIUS * 0.3, NPC_WANDER_RADIUS);
+    this._wanderTarget = {
+      x: this._homeX + Math.cos(angle) * radius,
+      y: this._homeY + Math.sin(angle) * radius,
+    };
+  }
+
+  /** @private */
+  _playWalk(facing) {
+    this._facing = facing;
+    if (this._animKey) {
+      const key = `${this._animKey}_walk_${facing}`;
+      if (this.scene.anims.exists(key)) this._sprite.play(key, true);
+    } else if (this._usesPlayerFallback) {
+      const key = `walk_${facing}`;
+      if (this.scene.anims.exists(key)) this._sprite.play(key, true);
+    }
+  }
+
+  /** @private */
+  _playIdle(facing = this._facing) {
+    this._facing = facing;
+    if (this._animKey) {
+      this._sprite.anims.stop();
+      this._sprite.setFrame(getIdleFrame(this._animKey, facing));
+    } else if (this._usesPlayerFallback) {
+      const idleFrameByFacing = { down: 1, left: 4, right: 7, up: 10 };
+      this._sprite.anims.stop();
+      this._sprite.setFrame(idleFrameByFacing[facing] ?? 1);
+    }
   }
 
   /**
@@ -149,5 +312,17 @@ export class NPC extends Phaser.GameObjects.Container {
 
     emitToReact('dialog:open', { npcKey: this.id, npcName: this.residentName, messages: lines });
     this._busy = false;
+  }
+
+  destroy(fromScene) {
+    if (this._collisionHandler) {
+      this.scene?.matter?.world?.off('collisionstart', this._collisionHandler);
+      this._collisionHandler = null;
+    }
+    if (this._body) {
+      this.scene?.matter?.world?.remove(this._body, true);
+      this._body = null;
+    }
+    super.destroy(fromScene);
   }
 }

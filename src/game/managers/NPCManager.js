@@ -53,15 +53,17 @@ export class NPCManager {
   }
 
   /**
-   * Aggiorna la prossimità di ogni NPC alla giocatrice. Chiamare da
+   * Aggiorna movimento, prossimità e animazione di ogni NPC. Chiamare da
    * `scene.update()` ogni frame.
    * @param {number} playerX
    * @param {number} playerY
+   * @param {number} delta ms dall'ultimo frame
    * @returns {void}
    */
-  update(playerX, playerY) {
+  update(playerX, playerY, delta) {
     this._nearestInRange = null;
     for (const npc of this._npcs) {
+      npc.update(delta);
       if (npc.updateProximity(playerX, playerY)) {
         this._nearestInRange = npc;
       }

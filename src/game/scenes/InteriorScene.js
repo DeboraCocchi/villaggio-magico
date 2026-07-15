@@ -91,9 +91,22 @@ export class InteriorScene extends Phaser.Scene {
       .filter(Boolean)
 
     // Crea tutti i tile layer per indice, stesso pattern usato in VillageScene
+    const cacheData = this.cache.tilemap.get(this.config.tilemapKey)
     map.layers.forEach((layerData, index) => {
       const layer = map.createLayer(index, tilesets, 0, 0)
-      if (layer) layer.setDepth(index)
+      if (layer) {
+        // Trova il layer corretto in cacheData usando l'id (gli indici sono sfasati)
+        const rawLayerData = cacheData?.data?.layers?.find(l => l.id === layerData.id)
+        const offsetX = rawLayerData?.offsetx ?? 0
+        const offsetY = rawLayerData?.offsety ?? 0
+        layer.setPosition(offsetX, offsetY)
+        const customDepth = rawLayerData?.properties?.find(p => p.name === 'depth')?.value
+        const finalDepth = customDepth ?? index
+        layer.setDepth(finalDepth)
+        if (offsetX !== 0 || offsetY !== 0) {
+          console.log(`[InteriorScene] Layer ${layerData.name}: offset (${offsetX}, ${offsetY})`)
+        }
+      }
     })
 
     // ── Collisioni interne (muri, mobili) ────────────────────────────────────
@@ -136,11 +149,30 @@ export class InteriorScene extends Phaser.Scene {
     this._setupExit(map)
 
     // ── Camera ────────────────────────────────────────────────────────────────
+    // Il player non può uscire dai bordi della mappa (physics)
     this.matter.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
-    this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
-    this.cameras.main.startFollow(this.player, true, 0.12, 0.12)
+
+    this.cameras.main.setBackgroundColor('#000000')
     this.cameras.main.setZoom(2)
     this.cameras.main.fadeIn(300, 0, 0, 0)
+
+    const ZOOM = 2
+    const mapW = map.widthInPixels
+    const mapH = map.heightInPixels
+    // Dimensioni del viewport in world-units (pixel Tiled) al zoom corrente
+    const camVpW = this.scale.width  / ZOOM
+    const camVpH = this.scale.height / ZOOM
+
+    // Per ogni asse: se la mappa è più piccola del viewport, i bounds vengono
+    // estesi simmetricamente così la camera rimane centrata e il nero riempie
+    // i bordi. Se la mappa è più grande, i bounds consentono lo scroll normale.
+    const boundsX = mapW < camVpW ? -(camVpW - mapW) / 2 : 0
+    const boundsY = mapH < camVpH ? -(camVpH - mapH) / 2 : 0
+    const boundsW = Math.max(mapW, camVpW)
+    const boundsH = Math.max(mapH, camVpH)
+
+    this.cameras.main.setBounds(boundsX, boundsY, boundsW, boundsH)
+    this.cameras.main.startFollow(this.player, true, 0.12, 0.12)
 
     emitToReact('scene:entered', { interiorId: this.interiorId })
 

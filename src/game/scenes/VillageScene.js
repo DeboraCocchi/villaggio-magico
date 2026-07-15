@@ -173,28 +173,7 @@ export class VillageScene extends Phaser.Scene {
     ].filter(Boolean)
 
     // ── Layer tile per INDICE NUMERICO ────────────────────────────────────────
-    //
-    // Phaser 3.90 NON accetta un oggetto LayerData direttamente in createLayer().
-    // Bisogna passare il nome stringa o l'indice numerico del tilelayer.
-    //
-    // Indici dei tilelayer (solo tilelayer, i group non contano):
-    //   0  Terreno
-    //   1  acqua animata
-    //   2  terreno2
-    //   3  cascate
-    //   4  alberi 1          (dentro group "alberi")
-    //   5  alberi 2
-    //   6  alberi 3
-    //   7  alberi4           (primo dei 5 duplicati)
-    //   8  alberi4
-    //   9  alberi4
-    //  10  alberi4
-    //  11  alberi4
-    //  12  alberi ultimo in basso
-    //  13  ponti
-    //  14  baracchino
-    //  15  case              (dentro group "case")
-    //  16  case2
+    const cacheData = this.cache.tilemap.get('villaggio')
 
     /**
      * Crea un layer per indice e gli assegna il depth.
@@ -204,8 +183,14 @@ export class VillageScene extends Phaser.Scene {
      */
     const mkLayer = (index, depth) => {
       try {
+        const layerData = map.layers[index]
         const l = map.createLayer(index, tilesets, 0, 0)
-        if (l) {
+        if (l && layerData) {
+          // Trova il layer corretto in cacheData usando l'id (gli indici sono sfasati)
+          const rawLayerData = cacheData?.data?.layers?.find(layer => layer.id === layerData.id)
+          const offsetX = rawLayerData?.offsetx ?? 0
+          const offsetY = rawLayerData?.offsety ?? 0
+          l.setPosition(offsetX, offsetY)
           l.setDepth(depth)
         } else {
           console.warn(`[VillageScene] Layer indice ${index} non creato`)
@@ -518,7 +503,7 @@ export class VillageScene extends Phaser.Scene {
     }
 
     this.itemManager?.update(this.player.x, this.player.y)
-    this.npcManager?.update(this.player.x, this.player.y)
+    this.npcManager?.update(this.player.x, this.player.y, delta)
     this.petManager?.update(this.player.x, this.player.y, delta, this.playerFacing)
   }
 
