@@ -1,6 +1,7 @@
 import { createCollectible } from '../entities/CollectibleItem.js';
 import { SeededRandom } from '../generators/PRNG.js';
 import { emitToReact } from '../utils/phaserBridge.js';
+import { useMagazzinoStore } from '../../store/useMagazzinoStore.js';
 
 /**
  * @file ItemManager.js
@@ -41,6 +42,24 @@ const MAX_MISSION_AMOUNT = 6;
 
 /** Raggio di raccolta (px mappa) attorno al player. */
 const PICKUP_RADIUS = 18;
+
+/**
+ * Mappa tipi specifici (nomi Tiled) → categoria generica usata da
+ * magazzino e quest. Es. 'arancia' → 'fruit', 'tulipano' → 'flower'.
+ */
+const CATEGORY_OF = {
+  arancia:  'fruit',  mela:     'fruit',  pesca:   'fruit',  pera:    'fruit',
+  tulipano: 'flower', genziana: 'flower', girasole:'flower', rosa:    'flower', viola:   'flower',
+};
+
+/**
+ * Normalizza un tipo specifico alla sua categoria generica.
+ * @param {string} type
+ * @returns {string}
+ */
+function categoryOf(type) {
+  return CATEGORY_OF[type] ?? type;
+}
 
 /**
  * Chiave data locale (YYYY-MM-DD) del dispositivo — non UTC, per evitare
@@ -266,7 +285,7 @@ export class ItemManager {
   _rollMissionAndSpawn() {
     if (this._slots.length === 0) return;
 
-    const types = [...new Set(this._slots.map((s) => s.type))].sort();
+    const types = [...new Set(this._slots.map((s) => categoryOf(s.type)))].sort();
     const rng   = new SeededRandom(hashSeed(this.dateKey));
 
     // NB: consumiamo sempre gli stessi valori dal PRNG, anche se la
@@ -277,7 +296,7 @@ export class ItemManager {
 
     if (this.missionType == null) this.missionType = rolledType;
 
-    const availableOfType = this._slots.filter((s) => s.type === this.missionType).length;
+    const availableOfType = this._slots.filter((s) => categoryOf(s.type) === this.missionType).length;
     if (this.missionAmount == null) {
       this.missionAmount = Math.min(rolledAmount, Math.max(1, availableOfType));
     }
@@ -285,10 +304,10 @@ export class ItemManager {
     const activeSlots = this._slots.filter(() => rng.next() < SPAWN_CHANCE);
 
     // Garantisce il minimo di oggetti missione anche se il tiro all'80% non basta.
-    const missionActiveCount = activeSlots.filter((s) => s.type === this.missionType).length;
+    const missionActiveCount = activeSlots.filter((s) => categoryOf(s.type) === this.missionType).length;
     if (missionActiveCount < this.missionAmount) {
       const activeIds = new Set(activeSlots.map((s) => s.id));
-      const reserve = this._slots.filter((s) => s.type === this.missionType && !activeIds.has(s.id));
+      const reserve = this._slots.filter((s) => categoryOf(s.type) === this.missionType && !activeIds.has(s.id));
       activeSlots.push(...reserve.slice(0, this.missionAmount - missionActiveCount));
     }
 
@@ -315,7 +334,9 @@ export class ItemManager {
 
     // Notifica il sistema quest (QuestManager) della raccolta.
     // Evento generico sul bridge: nessun accoppiamento diretto.
-    emitToReact('item:collected', { type: item.type });
+    const category = categoryOf(item.type);
+    emitToReact('item:collected', { type: category });
+    useMagazzinoStore.getState().recordCollect(category);
   }
 
   // ─────────────────────────────────────────────────────────────────
@@ -356,7 +377,7 @@ export class ItemManager {
    */
   _emitProgress() {
     const collected = [...this.collectedIds]
-      .filter((id) => this._slotById.get(id)?.type === this.missionType)
+      .filter((id) => categoryOf(this._slotById.get(id)?.type) === categoryOf(this.missionType))
       .length;
 
     emitToReact('quest:dailyProgress', {

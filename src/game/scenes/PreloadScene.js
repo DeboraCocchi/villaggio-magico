@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { VILLAGE_CONFIG } from '@data/villageConfig.js';
 import { getDirectionFrames } from '../utils/characterSpriteLayout.js';
+import { PLAYER_CHARACTERS, getSavedPlayerKey, createPlayerAnimations } from '../utils/playerCharacter.js';
 
 /**
  * @file PreloadScene.js
@@ -67,7 +68,7 @@ export class PreloadScene extends Phaser.Scene {
   // ─────────────────────────────────────────────────────────────────
   create() {
     this._createAnimations();
-    this.scene.start('VillageScene'); 
+    this.scene.start('AvatarScene');
   }
 
   // ─────────────────────────────────────────────────────────────────
@@ -138,14 +139,16 @@ export class PreloadScene extends Phaser.Scene {
     // lo richieda. VillageScene fa make.tilemap({ key: 'villaggio' }).
     this.load.tilemapTiledJSON('villaggio', 'assets/villaggio.tmj');
 
-    // ── Player ────────────────────────────────────────────────────
-    // Female_22-2.png: 96×128px, 3 col × 4 righe, frame 32×32
-    // (il caricamento è anche in VillageScene.preload per sicurezza,
-    //  ma caricarlo qui evita il doppio load grazie alla cache Phaser)
-    this.load.spritesheet('player', 'assets/sprites/player.png', {
-      frameWidth:  PLAYER_FRAME_W,   // 32
-      frameHeight: PLAYER_FRAME_H,   // 32
-    });
+    // ── Personaggi giocabili ──────────────────────────────────────
+    // Tutti gli spritesheet selezionabili in AvatarScene (player,
+    // player1, player3): 96×128px, 3 col × 4 righe, frame 32×32.
+    // Vanno caricati tutti qui così AvatarScene può mostrarli animati.
+    for (const { key } of PLAYER_CHARACTERS) {
+      this.load.spritesheet(key, `assets/sprites/${key}.png`, {
+        frameWidth:  PLAYER_FRAME_W,   // 32
+        frameHeight: PLAYER_FRAME_H,   // 32
+      });
+    }
 
     // ── NPC animali ───────────────────────────────────────────────
     // Decommentare NPC_KEYS sopra quando hai i PNG
@@ -236,31 +239,21 @@ export class PreloadScene extends Phaser.Scene {
   }
 
   /**
-   * Animazioni player — Female_22-2.png, 3 frame per direzione.
-   * Stesse chiave usate in VillageScene (walk_down, walk_left, ecc.)
+   * Animazioni player — walk_down/left/right/up + idle, create sulla
+   * texture del personaggio salvato in localStorage (fallback 'player').
+   * AvatarScene le RIGENERA sulla texture scelta al momento della
+   * conferma (createPlayerAnimations rimuove e ricrea), quindi qui
+   * servono solo come default sicuro.
    * @private
    */
   _createPlayerAnimations() {
-    // Salta se la texture non è stata caricata (sicurezza)
-    if (!this.textures.exists('player')) return;
+    const savedKey = getSavedPlayerKey();
+    const spriteKey = this.textures.exists(savedKey) ? savedKey : 'player';
 
-    const directions = [
-      { key: 'walk_down',  frames: [0, 1, 2]   },
-      { key: 'walk_left',  frames: [3, 4, 5]   },
-      { key: 'walk_right', frames: [6, 7, 8]   },
-      { key: 'walk_up',    frames: [9, 10, 11] },
-      { key: 'idle',       frames: [1]          },
-    ];
+    // Salta se nemmeno il fallback è stato caricato (sicurezza)
+    if (!this.textures.exists(spriteKey)) return;
 
-    for (const { key, frames } of directions) {
-      if (this.anims.exists(key)) continue;
-      this.anims.create({
-        key,
-        frames: this.anims.generateFrameNumbers('player', { frames }),
-        frameRate: 8,
-        repeat: key === 'idle' ? 0 : -1,
-      });
-    }
+    createPlayerAnimations(this.anims, spriteKey);
   }
 
   /**

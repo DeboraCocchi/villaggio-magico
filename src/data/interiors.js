@@ -47,6 +47,17 @@ const SHARED_INTERIOR_TILESETS = [
     key:  'interior_free_16x16',
     path: 'assets/tilesets/Interiors_free_16x16.png',
   },
+  {
+    name: 'Interiors_free_16x16_as32',
+    key:  'interior_free_16x16_as32',
+    path: 'assets/tilesets/Interiors_free_16x16_as32.png',
+  },
+  {
+    name: 'Room_Builder_free_32x32',
+    key:  'interior_room_builder',
+    path: 'assets/tilesets/Room_Builder_free_32x32.png',
+  },
+
 ]
  
 export const INTERIORS = {

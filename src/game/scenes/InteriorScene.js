@@ -20,6 +20,8 @@ import { INTERIORS } from '../../data/interiors.js'
 import { VILLAGE_CONFIG } from '../../data/villageConfig.js'
 import { NPC } from '../entities/NPC.js'
 import { Pet } from '../entities/Pet.js'
+import { PLAYER_SPRITE_REGISTRY_KEY, getSavedPlayerKey } from '../utils/playerCharacter.js'
+import { usePlayerStore, AUDIO_EVENT } from '../../store/usePlayerStore.js';
 
 const TILE_SIZE = 32
 const PLAYER_SPEED = 100
@@ -82,6 +84,11 @@ export class InteriorScene extends Phaser.Scene {
     this._indoorPets = []
     this._nearestInRange = null
     this._interactKey = null
+    this._playerSpriteKey = 'player'
+    this._magazzinoSensors = []
+    this._magazzinoHandlerStart = null
+    this._magazzinoHandlerEnd = null
+    this._magazzinoOpen = false
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -114,9 +121,11 @@ export class InteriorScene extends Phaser.Scene {
       }
     }
 
-    // Riusa lo spritesheet del player già caricato da VillageScene
-    if (!this.textures.exists('player')) {
-      this.load.spritesheet('player', 'assets/player.png', {
+    // Riusa lo spritesheet del personaggio scelto, già caricato da
+    // PreloadScene (player | player1 | player3). Fallback di sicurezza.
+    const playerKey = this.registry.get(PLAYER_SPRITE_REGISTRY_KEY) ?? getSavedPlayerKey()
+    if (!this.textures.exists(playerKey)) {
+      this.load.spritesheet(playerKey, `assets/sprites/${playerKey}.png`, {
         frameWidth: 32,
         frameHeight: 32,
       })
@@ -152,11 +161,23 @@ export class InteriorScene extends Phaser.Scene {
         const customDepth = rawLayerData?.properties?.find(p => p.name === 'depth')?.value
         const finalDepth = customDepth ?? index
         layer.setDepth(finalDepth)
-        if (offsetX !== 0 || offsetY !== 0) {
-          console.log(`[InteriorScene] Layer ${layerData.name}: offset (${offsetX}, ${offsetY})`)
-        }
+  
       }
     })
+
+      const { musicEnabled, volume } = usePlayerStore.getState();
+this.sound.mute   = !musicEnabled;
+this.sound.volume = volume;
+
+this._onAudioChange = (e) => {
+  this.sound.mute   = !e.detail.musicEnabled;
+  this.sound.volume = e.detail.volume;
+};
+window.addEventListener(AUDIO_EVENT, this._onAudioChange);
+
+this.events.once('shutdown', () => {
+  window.removeEventListener(AUDIO_EVENT, this._onAudioChange);
+});
 
     // ── Collisioni interne (muri, mobili) ────────────────────────────────────
     const collisionLayer = map.getObjectLayer('collision')
@@ -197,7 +218,8 @@ export class InteriorScene extends Phaser.Scene {
     }
 
     // ── Player ────────────────────────────────────────────────────────────────
-    this.player = this.matter.add.sprite(this.spawnX, this.spawnY, 'player')
+    this._playerSpriteKey = this.registry.get(PLAYER_SPRITE_REGISTRY_KEY) ?? getSavedPlayerKey()
+    this.player = this.matter.add.sprite(this.spawnX, this.spawnY, this._playerSpriteKey)
     this.player.setFixedRotation()
     this.player.setBody({ type: 'rectangle', width: 20, height: 24 })
     this.player.setFrictionAir(0.982)
@@ -207,11 +229,11 @@ export class InteriorScene extends Phaser.Scene {
     this.player.setMass(1)
     this.player.setDepth(this.player.y)
 
-    // Le animazioni walk_*/idle sono già registrate globalmente da
+    // Le animazioni walk_* e idle sono già registrate globalmente da
     // VillageScene (this.anims è condiviso da tutte le scene del gioco),
     // quindi qui non serve ricrearle.
     const idleFrameByFacing = { down: 1, left: 4, right: 7, up: 10 }
-    if (this.textures.exists('player')) {
+    if (this.textures.exists(this._playerSpriteKey)) {
       this.player.setFrame(idleFrameByFacing[this.playerFacing] ?? 1)
     }
 
@@ -219,6 +241,9 @@ export class InteriorScene extends Phaser.Scene {
 
     // ── Uscita verso il villaggio ─────────────────────────────────────────────
     this._setupExit(map)
+
+    // ── Bauli del magazzino (solo se il .tmj ha il layer) ─────────────────────
+    this._setupMagazzino(map)
 
     // ── Camera ────────────────────────────────────────────────────────────────
     // Il player non può uscire dai bordi della mappa (physics)
@@ -388,6 +413,86 @@ export class InteriorScene extends Phaser.Scene {
 
   // ─────────────────────────────────────────────────────────────────────────
   /**
+   * Legge l'Object Layer "magazzino" (presente in house_cece.tmj) e crea un
+   * sensor Matter per ogni baule con proprietà personalizzata magazzino=true.
+   * Avvicinandosi (il sensor è allargato di MAGAZZINO_MARGIN px per lato)
+   * viene emesso 'magazzino:open' verso React (MagazzinoPanel.jsx);
+   * allontanandosi da tutti i bauli viene emesso 'magazzino:close'.
+   *
+   * @param {Phaser.Tilemaps.Tilemap} map
+   * @private
+   */
+  _setupMagazzino(map) {
+    const magazzinoLayer = map.getObjectLayer('magazzino')
+    if (!magazzinoLayer || magazzinoLayer.objects.length === 0) return
+
+    // Margine di "avvicinamento": il recap si apre prima di toccare il baule
+    const MAGAZZINO_MARGIN = 20
+
+    /** Solo gli oggetti con la proprietà bool magazzino = true. */
+    const chests = magazzinoLayer.objects.filter((obj) =>
+      obj.properties?.some((p) => p.name === 'magazzino' && p.value === true)
+    )
+
+    if (chests.length === 0) {
+      console.warn(
+        `[InteriorScene] Layer "magazzino" trovato in ${this.config.tilemapKey} ma nessun oggetto ha magazzino=true (controlla le proprietà in Tiled)`
+      )
+      return
+    }
+
+    this._magazzinoSensors = chests.map((obj) => {
+      const w = (obj.width  ?? TILE_SIZE) + MAGAZZINO_MARGIN * 2
+      const h = (obj.height ?? TILE_SIZE) + MAGAZZINO_MARGIN * 2
+      return this.matter.add.rectangle(
+        obj.x + (obj.width  ?? TILE_SIZE) / 2,
+        obj.y + (obj.height ?? TILE_SIZE) / 2,
+        w,
+        h,
+        { isSensor: true, isStatic: true, label: 'magazzino' }
+      )
+    })
+
+    /** Bauli il cui sensor sta toccando il player in questo momento. */
+    const touching = new Set()
+
+    this._magazzinoHandlerStart = (event) => {
+      if (this.isTransitioning) return
+      for (const pair of event.pairs) {
+        const bodies = [pair.bodyA, pair.bodyB]
+        const sensor = bodies.find((b) => this._magazzinoSensors.includes(b))
+        const isPlayer = bodies.includes(this.player.body)
+        if (sensor && isPlayer) {
+          touching.add(sensor)
+          if (!this._magazzinoOpen) {
+            this._magazzinoOpen = true
+            emitToReact('magazzino:open', { interiorId: this.interiorId })
+          }
+        }
+      }
+    }
+
+    this._magazzinoHandlerEnd = (event) => {
+      for (const pair of event.pairs) {
+        const bodies = [pair.bodyA, pair.bodyB]
+        const sensor = bodies.find((b) => this._magazzinoSensors.includes(b))
+        const isPlayer = bodies.includes(this.player.body)
+        if (sensor && isPlayer) {
+          touching.delete(sensor)
+          if (touching.size === 0 && this._magazzinoOpen) {
+            this._magazzinoOpen = false
+            emitToReact('magazzino:close', { interiorId: this.interiorId })
+          }
+        }
+      }
+    }
+
+    this.matter.world.on('collisionstart', this._magazzinoHandlerStart)
+    this.matter.world.on('collisionend',   this._magazzinoHandlerEnd)
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  /**
    * Legge l'Object Layer "exit" (un solo oggetto atteso) e crea il sensor
    * Matter che, al contatto col player, riporta al villaggio.
    * @param {Phaser.Tilemaps.Tilemap} map
@@ -482,7 +587,7 @@ export class InteriorScene extends Phaser.Scene {
     this.player.setAngularVelocity(0)
     this.player.setDepth(this.player.y)
 
-    if (this.textures.exists('player')) {
+    if (this.textures.exists(this._playerSpriteKey)) {
       if (left)       this.player.play('walk_left',  true)
       else if (right) this.player.play('walk_right', true)
       else if (up)    this.player.play('walk_up',    true)
@@ -523,6 +628,22 @@ export class InteriorScene extends Phaser.Scene {
     if (this._exitCollisionHandler) {
       this.matter.world.off('collisionstart', this._exitCollisionHandler)
       this._exitCollisionHandler = null
+    }
+
+    if (this._magazzinoHandlerStart) {
+      this.matter.world.off('collisionstart', this._magazzinoHandlerStart)
+      this._magazzinoHandlerStart = null
+    }
+    if (this._magazzinoHandlerEnd) {
+      this.matter.world.off('collisionend', this._magazzinoHandlerEnd)
+      this._magazzinoHandlerEnd = null
+    }
+    this._magazzinoSensors = []
+
+    // Se il pannello era aperto uscendo dalla casa, chiudilo
+    if (this._magazzinoOpen) {
+      this._magazzinoOpen = false
+      emitToReact('magazzino:close', { interiorId: this.interiorId })
     }
   }
 }

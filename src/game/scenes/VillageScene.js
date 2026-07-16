@@ -13,6 +13,8 @@ import { NPCManager }     from '../managers/NPCManager.js'
 import { PetManager }     from '../managers/PetManager.js'
 import { listenFromReact, emitToReact } from '../utils/phaserBridge.js'
 import { QuestManager } from '../managers/QuestManager.js'
+import { PLAYER_SPRITE_REGISTRY_KEY, getSavedPlayerKey } from '../utils/playerCharacter.js'
+import { usePlayerStore, AUDIO_EVENT } from '../../store/usePlayerStore.js';
 
 const PLAYER_SPEED = 120
 const TILE_SIZE    = 32
@@ -156,10 +158,6 @@ export class VillageScene extends Phaser.Scene {
       map.addTilesetImage('Ores',                        'Ores'),
       map.addTilesetImage('Pixel Art Wheat',             'Pixel_Art_Wheat'),
       map.addTilesetImage('wooden_fence',                'wooden_fence'),
-      // ⚠️ Quando rinomini il secondo Trees nel .tmj in "Trees2", aggiorna qui:
-      // map.addTilesetImage('Trees2', 'Trees2'),
-      // Nel frattempo lo saltiamo: i tile del secondo Trees appariranno vuoti
-      // fino alla rinomina nel .tmj.
       map.addTilesetImage('Water Flora',                 'Water_Flora'),
       map.addTilesetImage('Bridgessx_32x32',             'Bridgessx_32x32'),
       map.addTilesetImage('Weeping Willow3',             'Weeping_Willow3'),
@@ -279,11 +277,26 @@ export class VillageScene extends Phaser.Scene {
       }
     }
 
+    const { musicEnabled, volume } = usePlayerStore.getState();
+this.sound.mute   = !musicEnabled;
+this.sound.volume = volume;
+
+this._onAudioChange = (e) => {
+  this.sound.mute   = !e.detail.musicEnabled;
+  this.sound.volume = e.detail.volume;
+};
+window.addEventListener(AUDIO_EVENT, this._onAudioChange);
+
+this.events.once('shutdown', () => {
+  window.removeEventListener(AUDIO_EVENT, this._onAudioChange);
+});
+
     // ── Player ────────────────────────────────────────────────────────────────
     const spawnX = map.widthInPixels  / 2
     const spawnY = map.heightInPixels / 2
 
-    this.player = this.matter.add.sprite(spawnX, spawnY, 'player')
+   const playerKey = this.registry.get(PLAYER_SPRITE_REGISTRY_KEY) ?? getSavedPlayerKey()
+    this.player = this.matter.add.sprite(spawnX, spawnY, playerKey)
     this.player.setDepth(this.player.y) 
     this.player.setFixedRotation()   // impedisce rotazioni fisiche
 
@@ -305,17 +318,17 @@ export class VillageScene extends Phaser.Scene {
     //   riga 1 (frame  3-5): walk_left
     //   riga 2 (frame  6-8): walk_right
     //   riga 3 (frame  9-11): walk_up
-    if (this.textures.exists('player')) {
+    if (this.textures.exists(playerKey)) {
       if (!this.anims.exists('walk_down'))
-        this.anims.create({ key: 'walk_down',  frames: this.anims.generateFrameNumbers('player', { start:  0, end:  2 }), frameRate: 8, repeat: -1 })
+        this.anims.create({ key: 'walk_down',  frames: this.anims.generateFrameNumbers(playerKey, { start:  0, end:  2 }), frameRate: 8, repeat: -1 })
       if (!this.anims.exists('walk_left'))
-        this.anims.create({ key: 'walk_left',  frames: this.anims.generateFrameNumbers('player', { start:  3, end:  5 }), frameRate: 8, repeat: -1 })
+        this.anims.create({ key: 'walk_left',  frames: this.anims.generateFrameNumbers(playerKey, { start:  3, end:  5 }), frameRate: 8, repeat: -1 })
       if (!this.anims.exists('walk_right'))
-        this.anims.create({ key: 'walk_right', frames: this.anims.generateFrameNumbers('player', { start:  6, end:  8 }), frameRate: 8, repeat: -1 })
+        this.anims.create({ key: 'walk_right', frames: this.anims.generateFrameNumbers(playerKey, { start:  6, end:  8 }), frameRate: 8, repeat: -1 })
       if (!this.anims.exists('walk_up'))
-        this.anims.create({ key: 'walk_up',    frames: this.anims.generateFrameNumbers('player', { start:  9, end: 11 }), frameRate: 8, repeat: -1 })
+        this.anims.create({ key: 'walk_up',    frames: this.anims.generateFrameNumbers(playerKey, { start:  9, end: 11 }), frameRate: 8, repeat: -1 })
       if (!this.anims.exists('idle'))
-        this.anims.create({ key: 'idle',       frames: [{ key: 'player', frame: 1 }],                                     frameRate: 1, repeat: -1 })
+        this.anims.create({ key: 'idle',       frames: [{ key: playerKey, frame: 1 }],                                     frameRate: 1, repeat: -1 })
       const idleFrameByFacing = { down: 1, left: 4, right: 7, up: 10 }
       this.player.anims.stop()
       this.player.setFrame(idleFrameByFacing[this.playerFacing] ?? 1)
@@ -373,6 +386,7 @@ export class VillageScene extends Phaser.Scene {
     // Ascolta 'item:collected' (ItemManager) e gestisce offerta/avanzamento/
     // completamento quest quando NPC.interact() chiama onNpcTalk().
     this.questManager = new QuestManager(this)
+
 
     // ── Porte verso gli interni delle case ───────────────────────────────────
     // Legge l'Object Layer "doors" del TMJ: un rettangolo per ogni porta, con
