@@ -66,8 +66,15 @@ export class PetManager {
    * @param {'down'|'left'|'right'|'up'} [playerFacing]
    * @returns {void}
    */
-  update(playerX, playerY, delta, playerFacing) {
-    for (const pet of this._pets) pet.update(delta, playerX, playerY, playerFacing);
+   update(playerX, playerY, delta, playerFacing) {
+    // Scarta i pet distrutti da uno shutdown/restart della scena
+    if (this._pets.some((pet) => pet.isDestroyed)) {
+      this._pets = this._pets.filter((pet) => !pet.isDestroyed);
+    }
+
+    for (const pet of this._pets) {
+      pet.update(delta, playerX, playerY, playerFacing);
+    }
   }
 
   /**

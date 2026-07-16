@@ -31,29 +31,43 @@ const INTERIOR_RESIDENTS = {
   interior_cece: {
     npcs: [
       {
-        id: 'mamma_chiara',
-        residentName: 'Mamma Chiara',
-        color: 'pink',
-        npc: {
-          personality: 'dolce e accogliente, ha sempre voglia di un abbraccio',
-          catchphrase: 'Bentornata Cece!'
-        }
-      }
+      id: 'mamma_chiara',
+      residentName: 'Mamma Chiara',
+      houseType: 'house',
+      color: 'white',
+      zone: 'center',
+      houseObjectName: 'house_cece',
+      spriteKey: 'chiara',
+      npc: {
+        personality: 'allegra e spiritosa, sempre pronta a darti un abbraccio',
+        catchphrase: 'Dai un bacino a mamma?',
+        firstDialog: 'Bentornata Cece! Com\'è andato il giro?',
+      },
+      welcomeMessage: 'Casa di Cece e Mamma Chiara. Cecilia, vieni a dare un bacino a mamma! 😘',
+      
+      },
+
     ],
     pets: []
   },
   interior_anna: {
     npcs: [
       { inhabitantId: 'nonna_anna' },
-      {
-        id: 'papa_ale',
-        residentName: 'Ale',
-        color: 'blue',
-        npc: {
-          personality: 'calmo e giocherellone, ama fare battute leggere',
-          catchphrase: 'Che bello stare insieme!'
-        }
-      }
+            {
+      id: 'babbo_ale',
+      residentName: 'Babbo Ale',
+      houseType: 'house',
+      color: 'gray',
+      zone: 'center',
+      houseObjectName: 'house_anna',
+      spriteKey: 'ale',
+      npc: {
+        personality: 'allegro e caloroso, sempre pronto a dare un abbraccio',
+        catchphrase: 'Dai un bacino a babbo?',
+        firstDialog: 'Bentornata Cece! Com\'è andato il giro?',
+      },
+      
+      },
     ],
     pets: []
   },

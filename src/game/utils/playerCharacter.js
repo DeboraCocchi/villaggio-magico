@@ -26,9 +26,9 @@ export const PLAYER_SPRITE_REGISTRY_KEY = 'playerSpriteKey';
  * @type {{ key: string, label: string }[]}
  */
 export const PLAYER_CHARACTERS = [
-  { key: 'player',  label: 'Cece'  },
-  { key: 'player1', label: 'Stella' },
-  { key: 'player3', label: 'Luna'   },
+  { key: 'player',  label: '🌸​'  },
+  { key: 'player1', label: '⭐' },
+  { key: 'player3', label: '​♥️​'   },
 ];
 
 /**

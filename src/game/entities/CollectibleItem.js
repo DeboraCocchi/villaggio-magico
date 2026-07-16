@@ -6,14 +6,14 @@ import Phaser from 'phaser';
  * ItemManager su uno slot dell'Object Layer di Tiled.
  * - Frutti: usano sprite da mission_fruits.png (14×27, 4 frutti diversi)
  * - Fiori: usano sprite da mission_flowers.png (20×24, 5 fiori diversi)
- * - Altri (conchiglie, funghi): usano emoji su Text
+ * - Conchiglie: usano sprite da mission_shells.png (28×31, 18 varianti, frame casuale)
+ * - Altri (funghi): usano emoji su Text
  *
  * @module entities/CollectibleItem
  */
 
-/** Emoji mostrata per ogni tipo di collezionabile (non-frutto, non-fiore). */
+/** Emoji mostrata per ogni tipo di collezionabile (non-frutto, non-fiore, non-conchiglia). */
 const TYPE_EMOJI = {
-  shell:    '🐚',
   mushroom: '🍄',
 };
 
@@ -34,6 +34,11 @@ const FLOWER_FRAME = {
   viola:     4,
 };
 
+/** Numero di frame disponibili in mission_shells.png (griglia 3×6). */
+const SHELL_FRAME_COUNT = 18;
+
+const SHELL_SCALE = 1.5;
+
 const DEPTH = 18;
 const TWEEN_DURATION = 300;
 
@@ -44,13 +49,15 @@ const TWEEN_DURATION = 300;
  * @param {number} y
  * @param {string} type - 'shell'|'mushroom'|'arancia'|'mela'|'pesca'|'pera'|'fruit'|'tulipano'|'genziana'|'girasole'|'rosa'|'viola'|'flower'
  * @param {number} slotId
- * @returns {CollectibleFruit|CollectibleFlower|CollectibleEmoji}
+ * @returns {CollectibleFruit|CollectibleFlower|CollectibleShell|CollectibleEmoji}
  */
 export function createCollectible(scene, x, y, type, slotId) {
   if (type in FRUIT_FRAME || type === 'fruit') {
     return new CollectibleFruit(scene, x, y, type, slotId);
   } else if (type in FLOWER_FRAME || type === 'flower') {
     return new CollectibleFlower(scene, x, y, type, slotId);
+  } else if (type === 'shell') {
+    return new CollectibleShell(scene, x, y, type, slotId);
   } else {
     return new CollectibleEmoji(scene, x, y, type, slotId);
   }
@@ -155,6 +162,55 @@ class CollectibleFlower extends Phaser.GameObjects.Sprite {
 }
 
 /**
+ * Conchiglia: nessun sottotipo, il frame è scelto a caso tra i 18 della griglia.
+ * @extends {Phaser.GameObjects.Sprite}
+ */
+class CollectibleShell extends Phaser.GameObjects.Sprite {
+  /**
+   * @param {Phaser.Scene} scene
+   * @param {number} x
+   * @param {number} y
+   * @param {string} type - 'shell'
+   * @param {number} slotId
+   */
+  constructor(scene, x, y, type, slotId) {
+    const frameIndex = Math.floor(Math.random() * SHELL_FRAME_COUNT);
+
+    super(scene, x, y, 'mission_shells', frameIndex);
+
+    /** @type {string} */
+    this.type = type;
+
+    /** @type {number} */
+    this.slotId = slotId;
+
+    this.setOrigin(0.5)
+      .setDepth(DEPTH)
+      .setScale(SHELL_SCALE);
+
+      
+
+    scene.add.existing(this);
+  }
+
+  /**
+   * Anima la raccolta (salto + fade) e distrugge lo sprite al termine.
+   * @returns {void}
+   */
+  collect() {
+    this.scene.tweens.add({
+      targets:  this,
+      y:        this.y - 14,
+      alpha:    0,
+      scale:    1.8,
+      duration: TWEEN_DURATION,
+      ease:     'Cubic.easeOut',
+      onComplete: () => this.destroy(),
+    });
+  }
+}
+
+/**
  * @extends {Phaser.GameObjects.Text}
  */
 class CollectibleEmoji extends Phaser.GameObjects.Text {
@@ -162,7 +218,7 @@ class CollectibleEmoji extends Phaser.GameObjects.Text {
    * @param {Phaser.Scene} scene
    * @param {number} x
    * @param {number} y
-   * @param {string} type - 'flower'|'shell'|'mushroom'
+   * @param {string} type - 'mushroom'
    * @param {number} slotId
    */
   constructor(scene, x, y, type, slotId) {

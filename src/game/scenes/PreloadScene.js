@@ -197,6 +197,12 @@ export class PreloadScene extends Phaser.Scene {
       frameHeight: 30,
     });
 
+    // mission_shells: 28×124 (1 colonna × 4 righe) con 4 conchiglie
+    this.load.spritesheet('mission_shells', 'assets/tilesets/mission_shells.png', {
+      frameWidth: 28,
+      frameHeight: 31,
+    });
+
     // ── Icone UI ──────────────────────────────────────────────────
     // Decommentare quando hai i file
     // this.load.image('icon_coin',  'assets/ui/coin.png');

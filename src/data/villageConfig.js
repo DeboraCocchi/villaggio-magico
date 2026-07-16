@@ -18,7 +18,7 @@ export const VILLAGE_CONFIG = {
   },
 
   // Un abitante per ogni casa già presente nell'Object Layer "houses" di villaggio.tmj
-  // (house_cece, house_daniele, house_ale, house_debora — vedi houseObjectName sotto).
+  // (house_cece, house_daniele, house_anna, house_debora — vedi houseObjectName sotto).
   inhabitants: [
     {
       id: 'cecilia',
@@ -75,7 +75,7 @@ export const VILLAGE_CONFIG = {
       houseType: 'cozy',
       color: 'yellow',
       zone: 'east',
-      houseObjectName: 'house_ale',
+      houseObjectName: 'house_anna',
       spriteKey: 'anna',
       nearbyObjects: [
         { type: 'flower', variant: 'pink',   offsetTile: { x: -1, y: 0 } },
@@ -114,6 +114,38 @@ export const VILLAGE_CONFIG = {
         behavior: 'wander_near_home',
         spriteKey: 'blue',
       }],
+    },
+    {
+      id: 'mamma_chiara',
+      residentName: 'Mamma Chiara',
+      houseType: 'house',
+      color: 'white',
+      zone: 'center',
+      houseObjectName: 'house_cece',
+      spriteKey: 'chiara',
+      npc: {
+        personality: 'allegra e spiritosa, sempre pronta a darti un abbraccio',
+        catchphrase: 'Dai un bacino a mamma?',
+        firstDialog: 'Bentornata Cece! Com\'è andato il giro?',
+      },
+      welcomeMessage: 'Casa di Cece e Mamma Chiara. Cecilia, vieni a dare un bacino a mamma! 😘',
+      
+    },
+    {
+      id: 'babbo_ale',
+      residentName: 'Babbo Alessandro',
+      houseType: 'house',
+      color: 'gray',
+      zone: 'center',
+      houseObjectName: 'house_anna',
+      spriteKey: 'ale',
+      npc: {
+        personality: 'allegro e caloroso, sempre pronto a dare un bacino a Cece',
+        catchphrase: 'Dai un bacino a babbo?',
+        firstDialog: 'Bentornata Cece! Com\'è andato il giro?',
+      },
+      welcomeMessage: 'Ciao Cece! Come stai? 😘',
+      
     },
   ],
 
