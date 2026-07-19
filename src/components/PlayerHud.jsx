@@ -2,11 +2,14 @@
  * @file PlayerHud.jsx
  * HUD della giocatrice.
  *
- * Unico elemento sempre presente: il dock di bottoni tondi a sinistra.
- * Ogni bottone funziona come switch — il pannello si espande dal bottone
- * e vi ricollassa dentro. A pannello chiuso lo schermo di gioco è libero.
+ * Due elementi ancorati agli angoli alti:
+ *  - a sinistra il pannello giocatrice: header sempre visibile
+ *    (avatar + nome + stagione) con un chevron che apre/chiude il corpo
+ *    (campanella, cuori, orario);
+ *  - a destra le missioni, collassate nel bottone "Missioni": un tocco
+ *    espande il QuestPanel in un popover, un altro lo richiude.
  *
- * Il controllo audio è indipendente dal dock e resta sempre visibile.
+ * Il controllo audio è indipendente e resta sempre visibile.
  *
  * @module PlayerHud
  */
@@ -54,23 +57,15 @@ function SpeakerIcon({ muted, volume }) {
 }
 
 /**
- * Bottone tondo del dock.
- * @param {{ emoji: string, label: string, badge?: number, active: boolean, onClick: Function }} props
+ * Chevron che ruota di 180° quando l'elemento associato è aperto.
+ * @param {{ open: boolean }} props
  */
-function DockButton({ emoji, label, badge, active, onClick }) {
+function Chevron({ open }) {
   return (
-    <button
-      type="button"
-      className={`hud-dock-btn ${active ? 'is-active' : ''}`}
-      onClick={onClick}
-      aria-expanded={active}
-      aria-label={label}
-    >
-      <span className="hud-dock-emoji" aria-hidden="true">{emoji}</span>
-      {badge > 0 && !active && (
-        <span className="hud-dock-badge" aria-hidden="true">{badge}</span>
-      )}
-    </button>
+    <svg viewBox="0 0 24 24" className={`hud-chevron ${open ? 'is-open' : ''}`} aria-hidden="true">
+      <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2.4"
+            strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }
 
@@ -101,81 +96,85 @@ export default function PlayerHud() {
   const badge = SEASON_BADGE[season] ?? SEASON_BADGE.primavera;
   const volumePercent = Math.round(volume * 100);
 
+  const playerOpen = openPanel === PANEL.PLAYER;
+  const questsOpen = openPanel === PANEL.QUESTS;
+
   return (
     <div className="hud-root">
-      {/* Velo trasparente: un tocco fuori chiude tutto. Esiste solo a pannello aperto. */}
-      {openPanel && (
+      {/* Scrim solo per il popover Missioni: un tocco fuori lo chiude.
+          Il pannello giocatrice si chiude col chevron, non serve scrim. */}
+      {questsOpen && (
         <div className="hud-scrim" onPointerDown={closePanel} aria-hidden="true" />
       )}
 
-      {/* ---------- Dock: unico elemento permanente ---------- */}
-      <div className="hud-dock">
-        <div className="hud-dock-slot">
-          <DockButton
-            emoji="🐱"
-            label="Scheda di Cecilia"
-            active={openPanel === PANEL.PLAYER}
-            onClick={() => togglePanel(PANEL.PLAYER)}
-          />
-          <div
-            className={`hud-bubble ${openPanel === PANEL.PLAYER ? 'is-open' : ''}`}
-            role="dialog"
-            aria-hidden={openPanel !== PANEL.PLAYER}
-          >
-            <div className="hud-card">
-              <div className="hud-name-row">
-                <span className="hud-avatar" aria-hidden="true">🐱</span>
-                <span className="hud-name">{name}</span>
-              </div>
+      {/* ---------- Pannello giocatrice: header sempre visibile + chevron ---------- */}
+      <div className={`hud-player-panel ${playerOpen ? 'is-open' : ''}`}>
+        <button
+          type="button"
+          className="hud-player-header"
+          onClick={() => togglePanel(PANEL.PLAYER)}
+          aria-expanded={playerOpen}
+          aria-label={playerOpen ? 'Chiudi la scheda di Cecilia' : 'Apri la scheda di Cecilia'}
+        >
+          <span className="hud-avatar" aria-hidden="true">🐱</span>
+          <span className="hud-name">{name}</span>
+          <span className="hud-season" title={badge.label}>
+            {badge.emoji} {badge.label}
+          </span>
+          <Chevron open={playerOpen} />
+        </button>
 
-              <div className="hud-stat hud-stat--coins">
-                <span className="hud-icon" aria-hidden="true">🔔</span>
-                <span className="hud-value">{coins}</span>
-              </div>
+        <div className="hud-player-body" aria-hidden={!playerOpen}>
+          <div className="hud-player-body-inner">
+            <div className="hud-stat hud-stat--coins">
+              <span className="hud-icon" aria-hidden="true">🔔</span>
+              <span className="hud-value">{coins}</span>
+            </div>
 
-              <div className="hud-stat hud-stat--hearts" aria-label={`${hearts} cuori`}>
-                {Array.from({ length: 5 }, (_, i) => (
-                  <span
-                    key={i}
-                    className={`hud-heart ${i < hearts ? 'is-full' : 'is-empty'}`}
-                    aria-hidden="true"
-                  >
-                    {i < hearts ? '💖' : '🤍'}
-                  </span>
-                ))}
-              </div>
-
-              <div className="hud-bottom-row">
-                <span className="hud-time">🕒 {currentTime}</span>
-                <span className="hud-season" title={badge.label}>
-                  {badge.emoji} {badge.label}
+            <div className="hud-stat hud-stat--hearts" aria-label={`${hearts} cuori`}>
+              {Array.from({ length: 5 }, (_, i) => (
+                <span
+                  key={i}
+                  className={`hud-heart ${i < hearts ? 'is-full' : 'is-empty'}`}
+                  aria-hidden="true"
+                >
+                  {i < hearts ? '💖' : '🤍'}
                 </span>
-              </div>
+              ))}
             </div>
-          </div>
-        </div>
 
-        <div className="hud-dock-slot">
-          <DockButton
-            emoji="📜"
-            label="Missioni"
-            badge={questCount}
-            active={openPanel === PANEL.QUESTS}
-            onClick={() => togglePanel(PANEL.QUESTS)}
-          />
-          <div
-            className={`hud-bubble hud-bubble--quests ${openPanel === PANEL.QUESTS ? 'is-open' : ''}`}
-            role="dialog"
-            aria-hidden={openPanel !== PANEL.QUESTS}
-          >
-            <div className="hud-card hud-card--quests">
-              <QuestPanel />
-            </div>
+            <span className="hud-time">🕒 {currentTime}</span>
           </div>
         </div>
       </div>
 
-      {/* ---------- Controllo audio: indipendente dal dock ---------- */}
+      {/* ---------- Missioni: collassate nel bottone, popover al toggle ---------- */}
+      <div className={`hud-quests ${questsOpen ? 'is-open' : ''}`}>
+        <button
+          type="button"
+          className="hud-quests-btn"
+          onClick={() => {
+  togglePanel(PANEL.PLAYER);
+  console.log('CLICK player → openPanel ora è:', usePlayerStore.getState().openPanel);
+}}
+
+          aria-expanded={questsOpen}
+          aria-label="Missioni"
+        >
+          <span className="hud-quests-emoji" aria-hidden="true">📜</span>
+          <span className="hud-quests-label">Missioni</span>
+          {questCount > 0 && !questsOpen && (
+            <span className="hud-quests-badge" aria-hidden="true">{questCount}</span>
+          )}
+          <Chevron open={questsOpen} />
+        </button>
+
+        <div className="hud-quests-popover" role="dialog" aria-hidden={!questsOpen}>
+          <QuestPanel />
+        </div>
+      </div>
+
+      {/* ---------- Controllo audio: indipendente dal resto ---------- */}
       <div className={`hud-audio ${musicEnabled ? '' : 'is-muted'}`}>
         <button
           type="button"

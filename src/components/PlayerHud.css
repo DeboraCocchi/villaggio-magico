@@ -1,5 +1,5 @@
 /**
- * PlayerHud.css — stile HUD "Villaggio Magico".
+ * PlayerHud.css — stile HUD "Il Magico Mondo di".
  * Palette pastello, bordi tondi, ombre morbide. Target: tablet, dito di bambina.
  */
 
@@ -15,125 +15,71 @@
 
 .hud-root button,
 .hud-root input,
-.hud-scrim,
-.hud-bubble.is-open {
+.hud-scrim {
   pointer-events: auto; /* ...tranne sui controlli veri */
 }
 
-/* Velo di chiusura: invisibile ma tappabile */
+/* Velo di chiusura: invisibile ma tappabile (solo per il popover Missioni) */
 .hud-scrim { position: absolute; inset: 0; background: transparent; }
 
-/* ============ Dock ============ */
+/* ============================================================
+   Pannello giocatrice — header sempre visibile + corpo a scomparsa
+   ============================================================ */
 
-.hud-dock {
+.hud-player-panel {
   position: absolute;
   top: 16px;
   left: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.hud-dock-slot { position: relative; }
-
-.hud-dock-btn {
-  position: relative;
-  width: 58px;
-  height: 58px;
-  border: 3px solid #ffffff;
-  border-radius: 50%;
-  background: linear-gradient(150deg, #ffd3e8, #ff9ecd);
-  box-shadow: 0 6px 16px rgba(190, 100, 150, 0.35);
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  transition: transform 200ms cubic-bezier(0.34, 1.5, 0.64, 1),
-              box-shadow 200ms ease, filter 200ms ease;
-}
-
-.hud-dock-btn:active { transform: scale(0.9); }
-
-.hud-dock-btn.is-active {
-  transform: scale(1.06) rotate(-6deg);
-  filter: brightness(1.06);
-  box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.7),
-              0 8px 20px rgba(190, 100, 150, 0.45);
-}
-
-.hud-dock-emoji {
-  font-size: 28px;
-  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.18));
-}
-
-.hud-dock-badge {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  min-width: 22px;
-  height: 22px;
-  padding: 0 5px;
-  border-radius: 11px;
-  border: 2px solid #ffffff;
-  background: #ff6b6b;
-  color: #ffffff;
-  font-size: 12px;
-  font-weight: 800;
-  display: grid;
-  place-items: center;
-  animation: hud-badge-pop 1.8s ease-in-out infinite;
-}
-
-@keyframes hud-badge-pop {
-  0%, 88%, 100% { transform: scale(1); }
-  94%           { transform: scale(1.18); }
-}
-
-/* ============ Pannelli: nascono dal bottone e vi rientrano ============ */
-
-.hud-bubble {
-  position: absolute;
-  top: 0;
-  left: 70px; /* subito a destra del bottone */
-  transform-origin: -12px 29px; /* centro del bottone che l'ha aperto */
-  transform: scale(0.35);
-  opacity: 0;
-  visibility: hidden;
-  transition: transform 300ms cubic-bezier(0.34, 1.45, 0.64, 1),
-              opacity 200ms ease,
-              visibility 0s linear 300ms;
-}
-
-.hud-bubble.is-open {
-  transform: scale(1);
-  opacity: 1;
-  visibility: visible;
-  transition: transform 340ms cubic-bezier(0.34, 1.45, 0.64, 1),
-              opacity 180ms ease,
-              visibility 0s;
-}
-
-.hud-card {
-  width: 230px;
-  padding: 14px 16px;
-  border-radius: 8px 26px 26px 26px; /* angolo "a fumetto" verso il bottone */
+  width: max-content;
+  min-width: 210px;
+  padding: 12px 16px;
+  border-radius: 8px 26px 26px 26px; /* stesso angolo "a fumetto" del vecchio card */
   background: linear-gradient(160deg, #fff6fb 0%, #ffe9f3 55%, #ffd8ea 100%);
   border: 3px solid #ffffff;
   box-shadow: 0 10px 28px rgba(190, 100, 150, 0.3);
   display: flex;
   flex-direction: column;
+  pointer-events: auto;
+}
+
+.hud-player-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+/* Chevron: ruota di 180° quando il pannello è aperto */
+.hud-chevron {
+  width: 22px;
+  height: 22px;
+  margin-left: auto;
+  flex: 0 0 auto;
+  color: rgba(138, 61, 107, 0.65); /* plum tenue, leggibile sul rosa chiaro */
+  transition: transform 220ms ease;
+}
+.hud-chevron.is-open { transform: rotate(180deg); }
+
+/* Corpo a scomparsa — variante robusta: max-height (Safari/iPad affidabile) */
+.hud-player-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 240ms ease;
+}
+.hud-player-panel.is-open .hud-player-body { max-height: 90px; } /* alza se il corpo cresce */
+
+.hud-player-body-inner {
+  display: flex;
+  align-items: center;
   gap: 10px;
+  padding-top: 10px; /* visibile solo da aperto: clippato dal contenitore */
 }
-
-.hud-card--quests {
-  width: 300px;
-  max-height: 60vh;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  background: linear-gradient(160deg, #fffbf0 0%, #fff3d9 55%, #ffe7bd 100%);
-  box-shadow: 0 10px 28px rgba(190, 140, 40, 0.3);
-}
-
-.hud-name-row { display: flex; align-items: center; gap: 8px; }
 
 .hud-avatar { font-size: 26px; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.15)); }
 
@@ -142,6 +88,16 @@
   font-weight: 800;
   color: #8a3d6b;
   letter-spacing: 0.3px;
+}
+
+.hud-season {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 12px;
+  padding: 3px 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #7a5c8e;
+  white-space: nowrap;
 }
 
 .hud-stat {
@@ -168,26 +124,118 @@
 .hud-heart.is-full  { transform: scale(1.08); }
 .hud-heart.is-empty { opacity: 0.55; }
 
-.hud-bottom-row {
-  display: flex;
-  justify-content: space-between;
+.hud-time {
+  display: inline-flex;
   align-items: center;
-  font-size: 13px;
-  font-weight: 700;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.72);
+  border-radius: 18px;
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: 800;
   color: #7a5c8e;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
-.hud-season {
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: 12px;
-  padding: 3px 8px;
+/* ============================================================
+   Missioni — bottone sempre visibile, popover al toggle
+   ============================================================ */
+
+.hud-quests {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  pointer-events: auto;
 }
 
-/* ============ Controllo audio ============ */
+.hud-quests-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: 3px solid #ffffff;
+  border-radius: 999px;
+  background: linear-gradient(150deg, #ffe6a8, #ffcf6b);
+  color: #8a5a1a;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(190, 140, 40, 0.32);
+  transition: transform 200ms cubic-bezier(0.34, 1.5, 0.64, 1),
+              box-shadow 200ms ease, filter 200ms ease;
+}
+.hud-quests-btn:active { transform: scale(0.94); }
+.hud-quests.is-open .hud-quests-btn {
+  transform: scale(1.04);
+  filter: brightness(1.05);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.6),
+              0 8px 20px rgba(190, 140, 40, 0.42);
+}
+
+.hud-quests-emoji {
+  font-size: 20px;
+  line-height: 1;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.15));
+}
+.hud-quests-label { font-size: 16px; letter-spacing: 0.3px; }
+
+.hud-quests-badge {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 5px;
+  border-radius: 11px;
+  border: 2px solid #ffffff;
+  background: #ff6b6b;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+  animation: hud-badge-pop 1.8s ease-in-out infinite;
+}
+
+@keyframes hud-badge-pop {
+  0%, 88%, 100% { transform: scale(1); }
+  94%           { transform: scale(1.18); }
+}
+
+/* Popover — variante robusta: max-height. Card ambrata come il vecchio hud-card--quests.
+   Da chiuso resta invisibile via opacity, quindi il bordo non lascia sbavature. */
+.hud-quests-popover {
+  width: min(320px, 78vw);
+  margin-top: 10px;
+  padding: 14px 16px;
+  border-radius: 26px 8px 26px 26px; /* angolo "a fumetto" verso il bottone */
+  background: linear-gradient(160deg, #fffbf0 0%, #fff3d9 55%, #ffe7bd 100%);
+  border: 3px solid #ffffff;
+  box-shadow: 0 10px 28px rgba(190, 140, 40, 0.3);
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: max-height 300ms ease, opacity 200ms ease, transform 200ms ease;
+  pointer-events: none;
+}
+.hud-quests.is-open .hud-quests-popover {
+  max-height: 60vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* ============================================================
+   Controllo audio — spostato sotto Missioni (angoli bassi = TouchControls)
+   ============================================================ */
 
 .hud-audio {
   position: absolute;
-  top: 16px;
+  top: 72px; /* ⬅️ era 16px: ora sotto la pill Missioni. Scambia con .hud-quests per invertire. */
   right: 16px;
   display: flex;
   align-items: center;
@@ -296,12 +344,14 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hud-bubble,
-  .hud-dock-btn,
+  .hud-player-body,
+  .hud-quests-popover,
+  .hud-quests-btn,
+  .hud-chevron,
   .hud-audio-btn,
   .hud-slider::-webkit-slider-thumb,
   .hud-slider-bubble {
     transition: none;
   }
-  .hud-dock-badge { animation: none; }
+  .hud-quests-badge { animation: none; }
 }

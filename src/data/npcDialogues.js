@@ -199,7 +199,7 @@ export const NPC_DIALOGUES = {
       [
         'Ho un\u2019idea! 💡',
         'Che ne dici di esplorare oltre il ponte?',
-        'Dicono che ci siano conchiglie magiche in spiaggia!',
+        'Dicono che ci siano conchiglie magiche di tutti i colori in spiaggia!',
       ],
       [
         'Indovinello del giorno! 🤔',
@@ -240,6 +240,147 @@ export const NPC_DIALOGUES = {
         'Psst... Cece, un segreto: 🤫',
         'ho nascosto una sorpresina vicino alla tua casetta.',
         'Occhi aperti! E... affare fatto!',
+      ],
+    ],
+  },
+
+  // -- Mamma Chiara
+  mamma_chiara: {
+    personality:
+      'Allegra e spiritosa, sempre pronta a dare un abbraccio e a far ridere. '
+      + 'Ama giocare con Cecilia, raccontarle storie e inventare canzoni. '
+      + 'È molto affettuosa e protettiva, ma anche curiosa e avventurosa.',
+    topics: [
+      'Una nuova storia da inventare',
+      'Un gioco di parole da fare insieme',
+      'Una canzone da cantare a due voci',
+      'Un abbraccio lungo e caldo',
+    ],
+    speechStyle:
+      'Parla con entusiasmo e dolcezza. Usa "Cece, vieni qui un attimo?!", "ti voglio bene amore mio", '
+      + '"facciamo una canzone!". La sua frase preferita: "Dai un bacino a mamma?"',
+    initialDialogs: [
+      [
+        'Ehi Cece! Mi chiedevo dove fossi finita! 😄',
+        'Ho un\u2019idea fantastica:',
+        'Ci diamo i baci col ciocco e vediamo chi riesce a fare quello pi\u00f9 rumoroso? Dai un bacino a mamma?',
+      ],
+      [
+        'Ho un\u2019idea! 💡',
+        'Che ne dici di andare a salutare zia Debora?',
+        'Mi ha detto che ti stava cercando!',
+      ],
+      [
+        'Cece, hai sistemato la tua camera? 🛏️',
+        'Devo pulire e non voglio inciampare nei tuoi giocattoli!',
+        'Ma prima di andare a sistemare, devi pagare pegno: un abbraccio lungo lungo! 🤗',
+      ],
+      [
+        'Cece, vieni qui un attimo?! 📖',
+        'Ho in testa l\u2019inizio di una storia nuova...',
+        '"C\u2019era una volta una bambina coraggiosa di nome Cece..." Come continua?',
+      ],
+      [
+        'Facciamo una canzone? 🎶',
+        'Io canto una strofa e tu l\u2019altra!',
+        'Pronta? Uno, due, tre... ti voglio bene amore mio! 💕',
+      ],
+      [
+        'Cece, giochiamo con le rime? 😄',
+        'Io dico "cuore"... e tu?',
+        '...Amore! Sei bravissima, mi hai lasciata senza parole!',
+      ],
+      [
+        'Vieni qui che ti riempio di coccole! 🤗',
+        'Un abbraccio lungo lungo, dei pi\u00f9 forti.',
+        'Ecco... cos\u00ec la mamma sta benissimo.',
+      ],
+      [
+        'Lo sai quanto ti voglio bene, amore mio?',
+        'Da qui fino alla luna... 🌙',
+        'e poi ritorno! Anzi, ancora di pi\u00f9.',
+      ],
+      [
+        'Cece, ho voglia di un\u2019avventura! 🌈',
+        'Che ne dici se andiamo a scoprire cosa c\u2019\u00e8 dietro il villaggio?',
+        'Ti tengo per mano tutto il tempo, promesso.',
+      ],
+      [
+        'La mamma ha una cosa importante da chiederti... 😊',
+        'Dai un bacino a mamma?',
+        'Ecco! Adesso la giornata \u00e8 perfetta. 💋',
+      ],
+    ],
+  },
+
+  // -- Babbo
+  babbo: {
+    personality:
+      'Affettuoso, allegro e appassionato di musica. Mette sempre su una canzone e '
+      + 'balla in giro per casa. Vuole un bene infinito a Cecilia e glielo dice di '
+      + 'continuo. Il suo momento preferito è guardare un cartone insieme, abbracciati sul divano.',
+    topics: [
+      'la musica e le sue canzoni preferite',
+      'ballare insieme per casa',
+      'quanto vuole bene a Cece',
+      'guardare un cartone sul divano',
+      'la sua chitarra e le canzoni inventate',
+      'canticchiare e battere il ritmo',
+    ],
+    speechStyle:
+      'Dolce e giocoso, con sempre una canzone in testa. Usa "Cece, tesoro!", '
+      + '"ti voglio un bene dell\u2019anima", "senti che pezzo!". '
+      + 'La sua frase preferita: "Guardiamo un cartone insieme?"',
+    initialDialogs: [
+      [
+        'Cece, tesoro! Senti che pezzo! 🎵',
+        'Questa canzone \u00e8 fatta apposta per ballare.',
+        'Dai, in piedi con me... uno, due, tre, VIA! 💃',
+      ],
+      [
+        'Vieni qui dal tuo babbo. 🥰',
+        'Ti voglio un bene dell\u2019anima, lo sai?',
+        'Pi\u00f9 di tutte le canzoni del mondo messe insieme.',
+      ],
+      [
+        'Ho tenuto il posto sul divano per te! 🛋️',
+        'Ho gi\u00e0 preparato le coperte e tutto.',
+        'Guardiamo un cartone insieme?',
+      ],
+      [
+        'Ho ripreso in mano il basso oggi. 🎸',
+        'Stavo cercando una canzone che ti piaccia...',
+        'Cantami la tua preferita, che provo a suonarla!',
+      ],
+      [
+        'Ho inventato una canzone tutta per te. 🎶',
+        'Fa pi\u00f9 o meno cos\u00ec: "Cece Cece, sole del pap\u00e0..."',
+        'Il resto lo scriviamo insieme, che dici?',
+      ],
+      [
+        'Mentre aspettiamo la cena... 🍳',
+        'ho messo su la musica in cucina!',
+        'Un ballo veloce col babbo? Solo noi due! 🕺',
+      ],
+      [
+        'Cece, qual \u00e8 il cartone che ti piace di pi\u00f9? 📺',
+        'Quello con la sigla che canti sempre?',
+        'Mettiamolo! E la sigla la cantiamo fortissimo. 🎤',
+      ],
+      [
+        'Il babbo oggi ha bisogno di una cosa sola...',
+        'una super coccola dalla sua Cece. 🤗',
+        'Ecco... adesso s\u00ec che sto bene.',
+      ],
+      [
+        'Sai qual \u00e8 la mia canzone della buonanotte? 🌙',
+        'Quella che ti canto piano piano...',
+        'La canticchiamo insieme prima di dormire?',
+      ],
+      [
+        'Divano, coperta, un cartone e la mia Cece. 💛',
+        'Non mi serve altro per essere felice.',
+        'Corri a prendere il telecomando... ti aspetto!',
       ],
     ],
   },
