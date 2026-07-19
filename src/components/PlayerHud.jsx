@@ -15,8 +15,9 @@
  */
 
 import { useState } from 'react';
-import { usePlayerStore, PANEL } from '@/store/usePlayerStore';
-import { useQuestStore } from '@/store/useQuestStore';
+import { usePlayerStore, PANEL } from '@store/usePlayerStore.js';
+import { useQuestStore } from '@store/useQuestStore.js';
+import { usePhaserEvent } from '../hooks/usePhaserEvent';
 import QuestPanel from './QuestPanel';
 import './PlayerHud.css';
 
@@ -91,10 +92,31 @@ export default function PlayerHud() {
     (s) => (s.quests ?? []).filter((q) => !q.completed).length
   );
 
+  // Bridge: eventi Phaser → store
+  const setCoins  = usePlayerStore((s) => s.setCoins);
+  const setHearts = usePlayerStore((s) => s.setHearts);
+  const setTime   = usePlayerStore((s) => s.setTime);
+  const setSeason = usePlayerStore((s) => s.setSeason);
+  usePhaserEvent('player:coinCollected', ({ total }) => setCoins(total));
+  usePhaserEvent('player:heartChanged',  ({ total }) => setHearts(total));
+  usePhaserEvent('world:timeChanged',    ({ time, season: s }) => {
+    setTime(time);
+    if (s) setSeason(s);
+  });
+
   const [sliderActive, setSliderActive] = useState(false);
+  const [volumeOpen, setVolumeOpen] = useState(false);
 
   const badge = SEASON_BADGE[season] ?? SEASON_BADGE.primavera;
   const volumePercent = Math.round(volume * 100);
+
+  // Data di sistema in italiano: "Domenica 19 luglio 2026"
+  const italianDate = (() => {
+    const raw = new Intl.DateTimeFormat('it-IT', {
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+    }).format(new Date());
+    return raw.charAt(0).toUpperCase() + raw.slice(1);
+  })();
 
   const playerOpen = openPanel === PANEL.PLAYER;
   const questsOpen = openPanel === PANEL.QUESTS;
@@ -116,11 +138,9 @@ export default function PlayerHud() {
           aria-expanded={playerOpen}
           aria-label={playerOpen ? 'Chiudi la scheda di Cecilia' : 'Apri la scheda di Cecilia'}
         >
-          <span className="hud-avatar" aria-hidden="true">🐱</span>
+          <span className="hud-avatar" aria-hidden="true">🐰​</span>
           <span className="hud-name">{name}</span>
-          <span className="hud-season" title={badge.label}>
-            {badge.emoji} {badge.label}
-          </span>
+        
           <Chevron open={playerOpen} />
         </button>
 
@@ -131,7 +151,7 @@ export default function PlayerHud() {
               <span className="hud-value">{coins}</span>
             </div>
 
-            <div className="hud-stat hud-stat--hearts" aria-label={`${hearts} cuori`}>
+            {/* <div className="hud-stat hud-stat--hearts" aria-label={`${hearts} cuori`}>
               {Array.from({ length: 5 }, (_, i) => (
                 <span
                   key={i}
@@ -141,9 +161,14 @@ export default function PlayerHud() {
                   {i < hearts ? '💖' : '🤍'}
                 </span>
               ))}
-            </div>
+            </div> */}
 
-            <span className="hud-time">🕒 {currentTime}</span>
+            <span className="hud-season" aria-label={badge.label}>
+               {badge.emoji} {italianDate} 
+            </span>
+            <span className="hud-date">
+               🕒 {currentTime}
+            </span>
           </div>
         </div>
       </div>
@@ -153,10 +178,7 @@ export default function PlayerHud() {
         <button
           type="button"
           className="hud-quests-btn"
-          onClick={() => {
-  togglePanel(PANEL.PLAYER);
-  console.log('CLICK player → openPanel ora è:', usePlayerStore.getState().openPanel);
-}}
+          onClick={() => togglePanel(PANEL.QUESTS)}
 
           aria-expanded={questsOpen}
           aria-label="Missioni"
@@ -174,37 +196,51 @@ export default function PlayerHud() {
         </div>
       </div>
 
-      {/* ---------- Controllo audio: indipendente dal resto ---------- */}
-      <div className={`hud-audio ${musicEnabled ? '' : 'is-muted'}`}>
+      {/* ---------- Controllo audio: bottone + toggle slider a destra ---------- */}
+      <div className={`hud-audio ${musicEnabled ? '' : 'is-muted'} ${playerOpen ? 'player-open' : ''} ${volumeOpen ? 'is-open' : ''}`}>
         <button
           type="button"
-          className="hud-audio-btn"
+          className="hud-audio-icon"
           onClick={usePlayerStore.getState().toggleMusic}
           aria-pressed={musicEnabled}
           aria-label={musicEnabled ? 'Spegni la musica' : 'Accendi la musica'}
+          title={musicEnabled ? 'Muta' : 'Accendi'}
         >
           <SpeakerIcon muted={!musicEnabled} volume={volume} />
         </button>
+             {volumeOpen && (
+          <div className={`hud-slider-wrap ${sliderActive ? 'is-active' : ''}`}>
+            <input
+              type="range"
+              className="hud-slider"
+              min="0"
+              max="100"
+              step="1"
+              value={musicEnabled ? volumePercent : 0}
+              style={{ '--vol': `${musicEnabled ? volumePercent : 0}%` }}
+              onChange={(e) => usePlayerStore.getState().setVolume(Number(e.target.value) / 100)}
+              onPointerDown={() => setSliderActive(true)}
+              onPointerUp={() => setSliderActive(false)}
+              onPointerCancel={() => setSliderActive(false)}
+              aria-label="Volume della musica"
+            />
+            <span className="hud-slider-bubble" aria-hidden="true">
+              {musicEnabled ? volumePercent : 0}
+            </span>
+          </div>
+        )}
 
-        <div className={`hud-slider-wrap ${sliderActive ? 'is-active' : ''}`}>
-          <input
-            type="range"
-            className="hud-slider"
-            min="0"
-            max="100"
-            step="1"
-            value={musicEnabled ? volumePercent : 0}
-            style={{ '--vol': `${musicEnabled ? volumePercent : 0}%` }}
-            onChange={(e) => usePlayerStore.getState().setVolume(Number(e.target.value) / 100)}
-            onPointerDown={() => setSliderActive(true)}
-            onPointerUp={() => setSliderActive(false)}
-            onPointerCancel={() => setSliderActive(false)}
-            aria-label="Volume della musica"
-          />
-          <span className="hud-slider-bubble" aria-hidden="true">
-            {musicEnabled ? volumePercent : 0}
-          </span>
-        </div>
+        <button
+          type="button"
+          className="hud-audio-toggle"
+          onClick={() => setVolumeOpen(!volumeOpen)}
+          aria-pressed={volumeOpen}
+          aria-label={volumeOpen ? 'Chiudi il controllo volume' : 'Apri il controllo volume'}
+        >
+          <Chevron open={volumeOpen} />
+        </button>
+
+   
       </div>
     </div>
   );

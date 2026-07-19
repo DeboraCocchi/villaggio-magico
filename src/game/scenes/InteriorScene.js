@@ -237,7 +237,7 @@ this.events.once('shutdown', () => {
     this.player = this.matter.add.sprite(this.spawnX, this.spawnY, this._playerSpriteKey)
     this.player.setFixedRotation()
     this.player.setBody({ type: 'rectangle', width: 20, height: 24 })
-    this.player.setFrictionAir(0.982)
+    this.player.setFrictionAir(0.989)
     this.player.setBounce(0)
     this.player.setFriction(0)
     this.player.setFrictionStatic(0)

@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import HUD       from '@components/HUD.jsx';
-import DialogBox from '@components/DialogBox.jsx';
-import QuestPanel from '@components/QuestPanel.jsx';
+import PlayerHud  from '@components/PlayerHud.jsx';
+import DialogBox  from '@components/DialogBox.jsx';
 import MagazzinoPanel from '@components/MagazzinoPanel.jsx';
 import TouchControls from '@components/TouchControls.jsx';
 
@@ -45,8 +44,7 @@ export default function App() {
     <div id="app-wrapper">
       <div id="game-container" />
       <div id="ui-overlay">
-        <HUD />
-        <QuestPanel />
+        <PlayerHud />
         <DialogBox />
         <MagazzinoPanel />
         <TouchControls />

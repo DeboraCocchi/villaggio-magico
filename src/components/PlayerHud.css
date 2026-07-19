@@ -19,6 +19,13 @@
   pointer-events: auto; /* ...tranne sui controlli veri */
 }
 
+/* Elimina il delay da 300ms su iOS e previene il double-tap-zoom
+   su tutti i controlli del HUD — essenziale in un gioco Phaser dove
+   il canvas può chiamare preventDefault() sugli eventi touch. */
+.hud-root button {
+  touch-action: manipulation;
+}
+
 /* Velo di chiusura: invisibile ma tappabile (solo per il popover Missioni) */
 .hud-scrim { position: absolute; inset: 0; background: transparent; }
 
@@ -30,9 +37,8 @@
   position: absolute;
   top: 16px;
   left: 16px;
-  width: max-content;
-  min-width: 210px;
-  padding: 12px 16px;
+  width: 150px;
+  padding: 10px 8px;
   border-radius: 8px 26px 26px 26px; /* stesso angolo "a fumetto" del vecchio card */
   background: linear-gradient(160deg, #fff6fb 0%, #ffe9f3 55%, #ffd8ea 100%);
   border: 3px solid #ffffff;
@@ -41,6 +47,8 @@
   flex-direction: column;
   pointer-events: auto;
 }
+
+.hud-player-panel.is-open { width: max-content; }
 
 .hud-player-header {
   display: flex;
@@ -59,7 +67,8 @@
 .hud-chevron {
   width: 22px;
   height: 22px;
-  margin-left: auto;
+  align-self: center;
+  justify-self: center;
   flex: 0 0 auto;
   color: rgba(138, 61, 107, 0.65); /* plum tenue, leggibile sul rosa chiaro */
   transition: transform 220ms ease;
@@ -72,7 +81,7 @@
   overflow: hidden;
   transition: max-height 240ms ease;
 }
-.hud-player-panel.is-open .hud-player-body { max-height: 90px; } /* alza se il corpo cresce */
+.hud-player-panel.is-open .hud-player-body { max-height: 120px; }
 
 .hud-player-body-inner {
   display: flex;
@@ -91,9 +100,13 @@
 }
 
 .hud-season {
+  display: inline-block;
+  /* align-items: center; */
+  gap: 8px;
+  border-radius: 18px;
+    padding: 6px 12px;
   background: rgba(255, 255, 255, 0.8);
-  border-radius: 12px;
-  padding: 3px 8px;
+
   font-size: 13px;
   font-weight: 700;
   color: #7a5c8e;
@@ -136,6 +149,20 @@
   color: #7a5c8e;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+
+.hud-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.72);
+  border-radius: 18px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #7a5c8e;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ============================================================
@@ -235,24 +262,32 @@
 
 .hud-audio {
   position: absolute;
-  top: 72px; /* ⬅️ era 16px: ora sotto la pill Missioni. Scambia con .hud-quests per invertire. */
-  right: 16px;
+  top: 16px;
+  left: 172px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 14px 8px 8px;
+  gap: 6px;
+  padding: 8px;
   border-radius: 30px;
   background: linear-gradient(150deg, #f3ecff 0%, #e6dcff 100%);
   border: 3px solid #ffffff;
   box-shadow: 0 8px 20px rgba(120, 90, 190, 0.26);
-  transition: opacity 220ms ease;
+  flex-direction: row;
+  transition: all 220ms ease;
 }
 
 .hud-audio.is-muted { opacity: 0.72; }
 
-.hud-audio-btn {
-  width: 46px;
-  height: 46px;
+.hud-audio > :not(.hud-slider-wrap) {
+  display: flex;
+  gap: 6px;
+ align-items: center;
+  justify-content: center;
+}
+
+.hud-audio-icon {
+  width: 40px;
+  height: 40px;
   border: none;
   border-radius: 50%;
   background: linear-gradient(150deg, #c9b4ff, #a98cff);
@@ -262,17 +297,56 @@
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(120, 90, 190, 0.4);
   transition: transform 160ms cubic-bezier(0.34, 1.5, 0.64, 1);
+  flex-shrink: 0;
 }
 
-.hud-audio-btn:active { transform: scale(0.88) rotate(-8deg); }
+.hud-audio-icon:active { transform: scale(0.88); }
 
-.hud-audio.is-muted .hud-audio-btn {
+.hud-audio.player-open{
+  left: 418px;
+}
+
+.hud-audio.is-muted .hud-audio-icon {
   background: linear-gradient(150deg, #cfcad8, #a8a2b8);
+}
+
+.hud-audio-toggle {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  color: #7a5a9e;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 160ms cubic-bezier(0.34, 1.5, 0.64, 1);
+  flex-shrink: 0;
+}
+
+.hud-audio-toggle:active { transform: scale(0.9); }
+
+.hud-audio-toggle svg {
+  width: 18px;
+  height: 18px;
 }
 
 .hud-speaker { width: 26px; height: 26px; }
 
-.hud-slider-wrap { position: relative; display: flex; align-items: center; }
+.hud-slider-wrap { 
+  position: relative; 
+  display: flex; 
+  align-items: center;
+  margin-top: 8px;
+  padding: 0 8px;
+  animation: slideDown 200ms ease-out;
+  transform-origin: top;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: scaleY(0); }
+  to { opacity: 1; transform: scaleY(1); }
+}
 
 .hud-slider {
   -webkit-appearance: none;

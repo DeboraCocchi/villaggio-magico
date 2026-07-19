@@ -143,7 +143,7 @@ export const NPC_DIALOGUES = {
       [
         'L\u2019altalena ti aspetta in giardino! 🌳',
         'L\u2019ha costruita il nonno tanti anni fa.',
-        'Ci dondolava anche la tua mamma da piccola!',
+        'Ci dondolava anche il tuo babbo da piccolo!',
       ],
       [
         'Oggi ho fatto la marmellata di fragole. 🍓',
@@ -314,7 +314,7 @@ export const NPC_DIALOGUES = {
   },
 
   // -- Babbo
-  babbo: {
+  babbo_ale: {
     personality:
       'Affettuoso, allegro e appassionato di musica. Mette sempre su una canzone e '
       + 'balla in giro per casa. Vuole un bene infinito a Cecilia e glielo dice di '
