@@ -122,7 +122,7 @@ export const VILLAGE_CONFIG = {
       color: 'white',
       zone: 'center',
       houseObjectName: 'house_cece',
-      spriteKey: 'chiara',
+      spriteKey: 'chiara3',
       npc: {
         personality: 'allegra e spiritosa, sempre pronta a darti un abbraccio',
         catchphrase: 'Dai un bacino a mamma?',
@@ -138,7 +138,7 @@ export const VILLAGE_CONFIG = {
       color: 'gray',
       zone: 'center',
       houseObjectName: 'house_anna',
-      spriteKey: 'ale',
+      spriteKey: 'ale2',
       npc: {
         personality: 'allegro e caloroso, sempre pronto a dare un bacino a Cece',
         catchphrase: 'Dai un bacino a babbo?',

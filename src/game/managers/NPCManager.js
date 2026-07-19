@@ -1,5 +1,6 @@
 import { NPC } from '../entities/NPC.js';
 import { VILLAGE_CONFIG } from '@data/villageConfig.js';
+import { touchInput } from '../utils/touchInput.js';
 
 /**
  * @file NPCManager.js
@@ -67,6 +68,14 @@ export class NPCManager {
       if (npc.updateProximity(playerX, playerY)) {
         this._nearestInRange = npc;
       }
+    }
+
+    // Tasto A touch: equivalente della pressione di E.
+    // Chiamato qui (e non con un listener) così durante un dialogo,
+    // quando la scena salta npcManager.update(), la pressione scade
+    // da sola senza riaprire il dialogo appena chiuso.
+    if (touchInput.consumeA()) {
+      this._handleInteractKey();
     }
   }
 

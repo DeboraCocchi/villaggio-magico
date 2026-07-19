@@ -21,6 +21,7 @@ import { VILLAGE_CONFIG } from '../../data/villageConfig.js'
 import { NPC } from '../entities/NPC.js'
 import { Pet } from '../entities/Pet.js'
 import { PLAYER_SPRITE_REGISTRY_KEY, getSavedPlayerKey } from '../utils/playerCharacter.js'
+import { touchInput } from '../utils/touchInput.js'
 import { usePlayerStore, AUDIO_EVENT } from '../../store/usePlayerStore.js';
 
 const TILE_SIZE = 32
@@ -37,7 +38,7 @@ const INTERIOR_RESIDENTS = {
       color: 'white',
       zone: 'center',
       houseObjectName: 'house_cece',
-      spriteKey: 'chiara',
+      spriteKey: 'chiara3',
       npc: {
         personality: 'allegra e spiritosa, sempre pronta a darti un abbraccio',
         catchphrase: 'Dai un bacino a mamma?',
@@ -60,7 +61,7 @@ const INTERIOR_RESIDENTS = {
       color: 'gray',
       zone: 'center',
       houseObjectName: 'house_anna',
-      spriteKey: 'ale',
+      spriteKey: 'ale2',
       npc: {
         personality: 'allegro e caloroso, sempre pronto a dare un abbraccio',
         catchphrase: 'Dai un bacino a babbo?',
@@ -575,10 +576,10 @@ this.events.once('shutdown', () => {
       return
     }
 
-    const left  = this.cursors.left.isDown  || this.wasd.left.isDown
-    const right = this.cursors.right.isDown || this.wasd.right.isDown
-    const up    = this.cursors.up.isDown    || this.wasd.up.isDown
-    const down  = this.cursors.down.isDown  || this.wasd.down.isDown
+    const left  = this.cursors.left.isDown  || this.wasd.left.isDown  || touchInput.left
+    const right = this.cursors.right.isDown || this.wasd.right.isDown || touchInput.right
+    const up    = this.cursors.up.isDown    || this.wasd.up.isDown    || touchInput.up
+    const down  = this.cursors.down.isDown  || this.wasd.down.isDown  || touchInput.down
 
     let vx = 0
     let vy = 0
@@ -620,7 +621,8 @@ this.events.once('shutdown', () => {
       }
     }
 
-    if (this._interactKey && Phaser.Input.Keyboard.JustDown(this._interactKey)) {
+    const touchInteract = touchInput.consumeA()
+    if ((this._interactKey && Phaser.Input.Keyboard.JustDown(this._interactKey)) || touchInteract) {
       this._nearestInRange?.interact()
     }
 

@@ -5406,12 +5406,12 @@
                         {
                          "name":"spawnX",
                          "type":"int",
-                         "value":300
+                         "value":288
                         }, 
                         {
                          "name":"spawnY",
                          "type":"int",
-                         "value":300
+                         "value":640
                         }, 
                         {
                          "name":"targetInterior",

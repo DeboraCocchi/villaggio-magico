@@ -14,6 +14,7 @@ import { PetManager }     from '../managers/PetManager.js'
 import { listenFromReact, emitToReact } from '../utils/phaserBridge.js'
 import { QuestManager } from '../managers/QuestManager.js'
 import { PLAYER_SPRITE_REGISTRY_KEY, getSavedPlayerKey } from '../utils/playerCharacter.js'
+import { touchInput } from '../utils/touchInput.js'
 import { usePlayerStore, AUDIO_EVENT } from '../../store/usePlayerStore.js';
 
 const PLAYER_SPEED = 120
@@ -457,10 +458,10 @@ this.events.once('shutdown', () => {
       return
     }
 
-    const left  = this.cursors.left.isDown  || this.wasd.left.isDown
-    const right = this.cursors.right.isDown || this.wasd.right.isDown
-    const up    = this.cursors.up.isDown    || this.wasd.up.isDown
-    const down  = this.cursors.down.isDown  || this.wasd.down.isDown
+    const left  = this.cursors.left.isDown  || this.wasd.left.isDown  || touchInput.left
+    const right = this.cursors.right.isDown || this.wasd.right.isDown || touchInput.right
+    const up    = this.cursors.up.isDown    || this.wasd.up.isDown    || touchInput.up
+    const down  = this.cursors.down.isDown  || this.wasd.down.isDown  || touchInput.down
 
     // Matter.js: impostiamo la velocità OGNI frame (non si accumula)
     let vx = 0

@@ -3,6 +3,7 @@ import HUD       from '@components/HUD.jsx';
 import DialogBox from '@components/DialogBox.jsx';
 import QuestPanel from '@components/QuestPanel.jsx';
 import MagazzinoPanel from '@components/MagazzinoPanel.jsx';
+import TouchControls from '@components/TouchControls.jsx';
 
 /**
  * Root dell'applicazione.
@@ -48,6 +49,7 @@ export default function App() {
         <QuestPanel />
         <DialogBox />
         <MagazzinoPanel />
+        <TouchControls />
       </div>
     </div>
   );
