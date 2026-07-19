@@ -24,7 +24,7 @@ import { NPC_DIALOGUES, GENERIC_DIALOG } from '@data/npcDialogues.js';
 import { useNpcMemoryStore } from '@store/useNpcMemoryStore.js';
 
 /** Modello gratuito con i limiti più generosi del free tier. */
-const GEMINI_MODEL = 'gemini-2.5-flash-lite';
+const GEMINI_MODEL = 'gemini-2.5-flash';
 
 /** Endpoint REST Gemini (supporta chiamate dal browser). */
 const GEMINI_URL =
