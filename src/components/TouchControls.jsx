@@ -21,7 +21,7 @@
  * @module TouchControls
  */
 
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { touchInput }     from '@game/utils/touchInput.js';
 import { useDialogStore } from '@store/useDialogStore.js';
 import './TouchControls.css';
@@ -31,12 +31,25 @@ const THUMB_TRAVEL_PX = 42;
 
 /**
  * Rileva se il dispositivo supporta il touch.
+ *
+ * Tre vie:
+ *  1. API touch presenti (ontouchstart / maxTouchPoints)
+ *  2. Media query '(any-pointer: coarse)' — copre l'emulazione DevTools
+ *  3. Override manuale '?touch=1' nell'URL, per debug da desktop
+ *
+ * Nota: con la device toolbar dei DevTools, maxTouchPoints si aggiorna
+ * solo dopo un reload; per questo il componente ascolta anche il primo
+ * evento 'touchstart' reale (vedi useEffect) e si attiva al volo.
+ *
  * @returns {boolean}
  */
 function isTouchDevice() {
+  if (typeof window === 'undefined') return false;
+  if (new URLSearchParams(window.location.search).has('touch')) return true;
   return (
-    typeof window !== 'undefined' &&
-    ('ontouchstart' in window || navigator.maxTouchPoints > 0)
+    'ontouchstart' in window ||
+    navigator.maxTouchPoints > 0 ||
+    window.matchMedia?.('(any-pointer: coarse)').matches
   );
 }
 
@@ -56,7 +69,17 @@ function dispatchSyntheticKey(code) {
  * @returns {JSX.Element|null}
  */
 export default function TouchControls() {
-  const [enabled] = useState(isTouchDevice);
+  const [enabled, setEnabled] = useState(isTouchDevice);
+
+  // Fallback: se il check iniziale è false ma arriva un tocco reale
+  // (es. emulazione attivata a pagina già caricata, o detection
+  // fallita su qualche browser), attiva i controlli al primo touch.
+  useEffect(() => {
+    if (enabled) return;
+    const onFirstTouch = () => setEnabled(true);
+    window.addEventListener('touchstart', onFirstTouch, { once: true, passive: true });
+    return () => window.removeEventListener('touchstart', onFirstTouch);
+  }, [enabled]);
 
   /** @type {React.MutableRefObject<HTMLDivElement|null>} */
   const padRef = useRef(null);

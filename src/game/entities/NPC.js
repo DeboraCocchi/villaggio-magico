@@ -121,7 +121,7 @@ export class NPC extends Phaser.GameObjects.Container {
     }).setOrigin(0.5);
 
     /** @type {Phaser.GameObjects.Text} Fumetto interazione, nascosto finché non si è vicini. */
-    this._prompt = scene.add.text(0, -36, 'premi E 💬', {
+    this._prompt = scene.add.text(0, -36, 'premi A 💬', {
       fontSize:   '9px',
       fontFamily: 'Segoe UI, system-ui, sans-serif',
       color:      '#ffffff',
