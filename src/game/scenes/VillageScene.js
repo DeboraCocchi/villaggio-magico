@@ -308,7 +308,7 @@ this.events.once('shutdown', () => {
     this.playerFacing = this._loadPlayerFacing()
 
     // Smorzamento: senza questo Matter accumula velocità indefinitamente
-    this.player.setFrictionAir(0.982)      // resistenza aria
+    this.player.setFrictionAir(0.987)      // resistenza aria
     this.player.setBounce(0)           // nessun rimbalzo
     this.player.setFriction(0)         // frizione superfici (irrilevante top-down)
     this.player.setFrictionStatic(0)
