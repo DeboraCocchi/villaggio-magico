@@ -19,6 +19,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { QUEST_BY_ID } from '@data/quests.js';
 import { usePlayerStore } from '@store/usePlayerStore.js';
+import { useMagazzinoStore } from '@store/useMagazzinoStore.js';
 import { emitToReact } from '@game/utils/phaserBridge.js';
 
 /**
@@ -58,6 +59,7 @@ export const useQuestStore = create(
         set((s) => ({
           active: { ...s.active, [questId]: { stepIndex: 0, count: 0 } },
         }));
+        get()._seedCollectFromMagazzino(questId);
         return true;
       },
 
@@ -108,6 +110,37 @@ export const useQuestStore = create(
       },
 
       /**
+       * Accredita subito, per lo step 'collect' corrente di una quest
+       * appena attivato, quanto già presente nel magazzino (cap al
+       * fabbisogno dello step). "Il possesso conta, non si consuma":
+       * il magazzino non viene scalato, quindi gli stessi oggetti
+       * possono soddisfare più quest.
+       *
+       * @param {string} questId
+       * @private (per convenzione: usato solo internamente)
+       */
+      _seedCollectFromMagazzino(questId) {
+        const quest = QUEST_BY_ID.get(questId);
+        const state = get().active[questId];
+        if (!quest || !state) return;
+
+        const step = quest.steps[state.stepIndex];
+        if (!step || step.type !== 'collect') return;
+
+        const totals = useMagazzinoStore.getState().totals;
+        const amount = step.amount ?? 1;
+        const count  = Math.min(totals[step.target] ?? 0, amount);
+
+        set((s) => ({
+          active: { ...s.active, [questId]: { ...s.active[questId], count } },
+        }));
+
+        if (count >= amount) {
+          get()._advanceStep(questId);
+        }
+      },
+
+      /**
        * Fa avanzare lo step corrente di una quest; se era l'ultimo,
        * completa la quest e assegna la ricompensa.
        *
@@ -126,6 +159,7 @@ export const useQuestStore = create(
           set((s) => ({
             active: { ...s.active, [questId]: { stepIndex: nextIndex, count: 0 } },
           }));
+          get()._seedCollectFromMagazzino(questId);
           return false;
         }
 

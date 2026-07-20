@@ -3137,30 +3137,30 @@
                         }, 
                         {
                          "x":-189.779995782667,
-                         "y":-2.14767414357861
+                         "y":-2.26469671489217
                         }, 
                         {
                          "x":-190.482884655936,
-                         "y":-125.996883089944
+                         "y":-132.862207273673
                         }, 
                         {
                          "x":-160.258663105363,
-                         "y":-159.643778006008
+                         "y":-168.342455806982
                         }, 
                         {
                          "x":-28.8184438040346,
-                         "y":-159.643778006008
+                         "y":-168.342455806982
                         }, 
                         {
                          "x":0.702888873269103,
-                         "y":-128.144557233522
+                         "y":-135.126903988564
                         }],
                  "rotation":0,
                  "type":"",
                  "visible":true,
                  "width":0,
                  "x":606.593097631264,
-                 "y":159.643778006008
+                 "y":168.342455806982
                 }, 
                 {
                  "height":0,
@@ -3903,8 +3903,14 @@
                  "name":"",
                  "opacity":1,
                  "point":true,
+                 "properties":[
+                        {
+                         "name":"type",
+                         "type":"string",
+                         "value":"mela"
+                        }],
                  "rotation":0,
-                 "type":"",
+                 "type":"fruit",
                  "visible":true,
                  "width":0,
                  "x":322.809867018577,
@@ -3923,7 +3929,7 @@
                          "value":"mela"
                         }],
                  "rotation":0,
-                 "type":"",
+                 "type":"fruit",
                  "visible":true,
                  "width":0,
                  "x":744.086894731499,
@@ -3935,8 +3941,14 @@
                  "name":"",
                  "opacity":1,
                  "point":true,
+                 "properties":[
+                        {
+                         "name":"type",
+                         "type":"string",
+                         "value":"mela"
+                        }],
                  "rotation":0,
-                 "type":"",
+                 "type":"fruit",
                  "visible":true,
                  "width":0,
                  "x":773.525530403005,
@@ -3955,7 +3967,7 @@
                          "value":"pera"
                         }],
                  "rotation":0,
-                 "type":"",
+                 "type":"fruit",
                  "visible":true,
                  "width":0,
                  "x":646.634859405137,
@@ -3967,8 +3979,14 @@
                  "name":"",
                  "opacity":1,
                  "point":true,
+                 "properties":[
+                        {
+                         "name":"type",
+                         "type":"string",
+                         "value":"mela"
+                        }],
                  "rotation":0,
-                 "type":"",
+                 "type":"fruit",
                  "visible":true,
                  "width":0,
                  "x":73.0890264947721,
@@ -4070,8 +4088,14 @@
                  "name":"",
                  "opacity":1,
                  "point":true,
+                 "properties":[
+                        {
+                         "name":"type",
+                         "type":"string",
+                         "value":"pera"
+                        }],
                  "rotation":0,
-                 "type":"",
+                 "type":"fruit",
                  "visible":true,
                  "width":0,
                  "x":293.248945147679,
@@ -4083,8 +4107,14 @@
                  "name":"",
                  "opacity":1,
                  "point":true,
+                 "properties":[
+                        {
+                         "name":"type",
+                         "type":"string",
+                         "value":"pesca"
+                        }],
                  "rotation":0,
-                 "type":"",
+                 "type":"fruit",
                  "visible":true,
                  "width":0,
                  "x":369.198312236287,
@@ -4121,6 +4151,63 @@
                  "width":0,
                  "x":149.789029535865,
                  "y":316.455696202532
+                }, 
+                {
+                 "height":0,
+                 "id":544,
+                 "name":"",
+                 "opacity":1,
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"type",
+                         "type":"string",
+                         "value":"pesca"
+                        }],
+                 "rotation":0,
+                 "type":"fruit",
+                 "visible":true,
+                 "width":0,
+                 "x":168.7543493389,
+                 "y":757.944792391556
+                }, 
+                {
+                 "height":0,
+                 "id":545,
+                 "name":"",
+                 "opacity":1,
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"type",
+                         "type":"string",
+                         "value":"pesca"
+                        }],
+                 "rotation":0,
+                 "type":"fruit",
+                 "visible":true,
+                 "width":0,
+                 "x":63.7903038738112,
+                 "y":612.386917188587
+                }, 
+                {
+                 "height":0,
+                 "id":546,
+                 "name":"",
+                 "opacity":1,
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"type",
+                         "type":"string",
+                         "value":"arancia"
+                        }],
+                 "rotation":0,
+                 "type":"fruit",
+                 "visible":true,
+                 "width":0,
+                 "x":154.836464857342,
+                 "y":607.747622361401
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -4660,8 +4747,14 @@
                  "name":"",
                  "opacity":1,
                  "point":true,
+                 "properties":[
+                        {
+                         "name":"type",
+                         "type":"string",
+                         "value":"rosa"
+                        }],
                  "rotation":0,
-                 "type":"",
+                 "type":"flower",
                  "visible":true,
                  "width":0,
                  "x":382.37154705841,
@@ -4725,8 +4818,14 @@
                  "name":"",
                  "opacity":1,
                  "point":true,
+                 "properties":[
+                        {
+                         "name":"type",
+                         "type":"string",
+                         "value":"genziana"
+                        }],
                  "rotation":0,
-                 "type":"",
+                 "type":"flower",
                  "visible":true,
                  "width":0,
                  "x":173.613551697477,
@@ -4734,7 +4833,7 @@
                 }],
          "opacity":1,
          "type":"objectgroup",
-         "visible":false,
+         "visible":true,
          "x":0,
          "y":0
         }, 
@@ -5591,7 +5690,7 @@
          "y":0
         }],
  "nextlayerid":44,
- "nextobjectid":544,
+ "nextobjectid":547,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.12.2",

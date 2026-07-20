@@ -73,7 +73,7 @@ export default function QuestPanel() {
     <>
       {showPanel && (
         <div style={styles.container} aria-label="Missioni attive">
-          <div style={styles.header}>📜 Missioni</div>
+          {/* <div style={styles.header}>📜 Missioni</div> */}
 
           {/* Missione del giorno (ItemManager) */}
           {daily && daily.type && (

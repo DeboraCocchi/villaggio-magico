@@ -44,25 +44,25 @@ export const QUESTS = [
     id:          'q01_torta_nonna_anna',
     giverNpc:    'nonna_anna',
     title:       'La torta di Nonna Anna 🥧',
-    description: 'La nonna vuole preparare la sua famosa torta di mele, '
+    description: 'La nonna vuole preparare la sua famosa torta di frutta, '
                + 'ma le servono frutti freschi!',
     steps: [
       {
         type:   'collect',
-        target: 'mela',
-        amount: 3,
-        hint:   'Raccogli 3 mele 🍎 vicino agli alberi!',
+        target: 'fruit',
+        amount: 6,
+        hint:   'Raccogli 6 frutti 🍎🍊​🍐​🍑​​ vicino agli alberi!',
       },
       {
         type:   'talk',
         target: 'nonna_anna',
-        hint:   'Porta le mele a Nonna Anna!',
+        hint:   'Porta i frutti a Nonna Anna!',
       },
     ],
     offerDialog: [
       'Cecilia tesoro, mi aiuti? 🥧',
-      'Voglio fare la torta di mele...',
-      'Mi porti 3 frutti belli maturi?',
+      'Voglio fare la torta di frutta...',
+      'Mi porti 6 frutti belli maturi?',
     ],
     completionDialog: [
       'Che frutti meravigliosi! 🍎',

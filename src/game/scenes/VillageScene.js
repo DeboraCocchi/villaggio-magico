@@ -16,6 +16,7 @@ import { QuestManager } from '../managers/QuestManager.js'
 import { PLAYER_SPRITE_REGISTRY_KEY, getSavedPlayerKey } from '../utils/playerCharacter.js'
 import { touchInput } from '../utils/touchInput.js'
 import { usePlayerStore, AUDIO_EVENT } from '../../store/usePlayerStore.js';
+import { computeZoom } from '../utils/responsiveZoom.js'
 
 const PLAYER_SPEED = 120
 const TILE_SIZE    = 32
@@ -404,7 +405,11 @@ this.events.once('shutdown', () => {
     this.matter.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
     this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
     this.cameras.main.startFollow(this.player, true, 0.12, 0.12)
-    this.cameras.main.setZoom(2)
+    this.cameras.main.setZoom(computeZoom(this.scale))
+
+    this._onResizeZoom = () => this.cameras.main.setZoom(computeZoom(this.scale))
+
+    this.scale.on('resize', this._onResizeZoom)
 
     // ── Debug Matter (hitbox visibili se debug:true nel config) ──────────────
     // Per nascondere le hitbox: metti debug:false nel config Phaser.
@@ -686,6 +691,10 @@ this.events.once('shutdown', () => {
    * evitare timer orfani e tracce musicali sovrapposte.
    */
   shutdown() {
+    if (this._onResizeZoom) {
+      this.scale.off('resize', this._onResizeZoom)
+      this._onResizeZoom = null
+    }
     this.dayNight?.destroy()
     this.audioManager?.destroy()
     this.itemManager?.destroy()

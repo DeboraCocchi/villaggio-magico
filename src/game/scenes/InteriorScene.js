@@ -23,6 +23,7 @@ import { Pet } from '../entities/Pet.js'
 import { PLAYER_SPRITE_REGISTRY_KEY, getSavedPlayerKey } from '../utils/playerCharacter.js'
 import { touchInput } from '../utils/touchInput.js'
 import { usePlayerStore, AUDIO_EVENT } from '../../store/usePlayerStore.js';
+import { computeZoom } from '../utils/responsiveZoom.js'
 
 const TILE_SIZE = 32
 const PLAYER_SPEED = 100
@@ -104,6 +105,7 @@ export class InteriorScene extends Phaser.Scene {
     this._magazzinoHandlerStart = null
     this._magazzinoHandlerEnd = null
     this._magazzinoOpen = false
+    this._onAudioChange = null
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -113,6 +115,16 @@ export class InteriorScene extends Phaser.Scene {
     this.spawnY = data.spawnY ?? 0
     this.config = INTERIORS[this.interiorId]
     this.isTransitioning = false
+    this.playerFacing = 'down'
+    this._collisionAabbs = []
+    this._indoorNpcs = []
+    this._indoorPets = []
+    this._nearestInRange = null
+    this._magazzinoSensors = []
+    this._magazzinoHandlerStart = null
+    this._magazzinoHandlerEnd = null
+    this._magazzinoOpen = false
+    this._exitCollisionHandler = null
 
     if (!this.config) {
       console.error(
@@ -149,6 +161,8 @@ export class InteriorScene extends Phaser.Scene {
 
   // ─────────────────────────────────────────────────────────────────────────
   create() {
+    this.events.once('shutdown', this.shutdown, this)
+
     if (!this.config) {
       // Fallback: torna al villaggio invece di restare su una scena rotta
       this.scene.stop()
@@ -189,10 +203,6 @@ this._onAudioChange = (e) => {
   this.sound.volume = e.detail.volume;
 };
 window.addEventListener(AUDIO_EVENT, this._onAudioChange);
-
-this.events.once('shutdown', () => {
-  window.removeEventListener(AUDIO_EVENT, this._onAudioChange);
-});
 
     // ── Collisioni interne (muri, mobili) ────────────────────────────────────
     const collisionLayer = map.getObjectLayer('collision')
@@ -265,26 +275,13 @@ this.events.once('shutdown', () => {
     this.matter.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
 
     this.cameras.main.setBackgroundColor('#000000')
-    this.cameras.main.setZoom(2)
     this.cameras.main.fadeIn(300, 0, 0, 0)
 
-    const ZOOM = 2
-    const mapW = map.widthInPixels
-    const mapH = map.heightInPixels
-    // Dimensioni del viewport in world-units (pixel Tiled) al zoom corrente
-    const camVpW = this.scale.width  / ZOOM
-    const camVpH = this.scale.height / ZOOM
-
-    // Per ogni asse: se la mappa è più piccola del viewport, i bounds vengono
-    // estesi simmetricamente così la camera rimane centrata e il nero riempie
-    // i bordi. Se la mappa è più grande, i bounds consentono lo scroll normale.
-    const boundsX = mapW < camVpW ? -(camVpW - mapW) / 2 : 0
-    const boundsY = mapH < camVpH ? -(camVpH - mapH) / 2 : 0
-    const boundsW = Math.max(mapW, camVpW)
-    const boundsH = Math.max(mapH, camVpH)
-
-    this.cameras.main.setBounds(boundsX, boundsY, boundsW, boundsH)
+    this._applyCameraZoomAndBounds()
     this.cameras.main.startFollow(this.player, true, 0.12, 0.12)
+
+    this._onResizeZoom = () => this._applyCameraZoomAndBounds()
+    this.scale.on('resize', this._onResizeZoom)
 
     emitToReact('scene:entered', { interiorId: this.interiorId })
 
@@ -297,6 +294,34 @@ this.events.once('shutdown', () => {
       right: Phaser.Input.Keyboard.KeyCodes.D,
     })
     this._interactKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes[INTERACT_KEY])
+  }
+
+  /**
+   * Applica lo zoom responsivo e ricalcola i bounds della camera in
+   * world-units (pixel Tiled) a partire dallo zoom corrente, così i due
+   * restano sempre coerenti (richiamato da create() e dal resize).
+   */
+  _applyCameraZoomAndBounds() {
+    const zoom = computeZoom(this.scale)
+    console.log(zoom);
+    
+    this.cameras.main.setZoom(zoom)
+
+    const mapW = this.map.widthInPixels
+    const mapH = this.map.heightInPixels
+    // Dimensioni del viewport in world-units (pixel Tiled) al zoom corrente
+    const camVpW = this.scale.width  / zoom
+    const camVpH = this.scale.height / zoom
+
+    // Per ogni asse: se la mappa è più piccola del viewport, i bounds vengono
+    // estesi simmetricamente così la camera rimane centrata e il nero riempie
+    // i bordi. Se la mappa è più grande, i bounds consentono lo scroll normale.
+    const boundsX = mapW < camVpW ? -(camVpW - mapW) / 2 : 0
+    const boundsY = mapH < camVpH ? -(camVpH - mapH) / 2 : 0
+    const boundsW = Math.max(mapW, camVpW)
+    const boundsH = Math.max(mapH, camVpH)
+
+    this.cameras.main.setBounds(boundsX, boundsY, boundsW, boundsH)
   }
 
   _spawnInteriorResidents() {
@@ -633,6 +658,16 @@ this.events.once('shutdown', () => {
 
   // ─────────────────────────────────────────────────────────────────────────
   shutdown() {
+    const matterWorld = this.matter?.world
+
+    if (this._onAudioChange) {
+      window.removeEventListener(AUDIO_EVENT, this._onAudioChange)
+      this._onAudioChange = null
+    }
+    if (this._onResizeZoom) {
+      this.scale.off('resize', this._onResizeZoom)
+      this._onResizeZoom = null
+    }
     for (const npc of this._indoorNpcs) npc.destroy()
     this._indoorNpcs = []
 
@@ -642,16 +677,16 @@ this.events.once('shutdown', () => {
     this._nearestInRange = null
 
     if (this._exitCollisionHandler) {
-      this.matter.world.off('collisionstart', this._exitCollisionHandler)
+      matterWorld?.off('collisionstart', this._exitCollisionHandler)
       this._exitCollisionHandler = null
     }
 
     if (this._magazzinoHandlerStart) {
-      this.matter.world.off('collisionstart', this._magazzinoHandlerStart)
+      matterWorld?.off('collisionstart', this._magazzinoHandlerStart)
       this._magazzinoHandlerStart = null
     }
     if (this._magazzinoHandlerEnd) {
-      this.matter.world.off('collisionend', this._magazzinoHandlerEnd)
+      matterWorld?.off('collisionend', this._magazzinoHandlerEnd)
       this._magazzinoHandlerEnd = null
     }
     this._magazzinoSensors = []

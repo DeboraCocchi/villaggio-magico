@@ -94,7 +94,7 @@
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 432, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 430, 431, 419, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 348, 348, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -136,7 +136,7 @@
                 {
                  "name":"depth",
                  "type":"int",
-                 "value":900
+                 "value":800
                 }],
          "type":"tilelayer",
          "visible":true,
@@ -222,6 +222,12 @@
          "offsetx":4,
          "offsety":-2,
          "opacity":1,
+         "properties":[
+                {
+                 "name":"depth",
+                 "type":"int",
+                 "value":910
+                }],
          "type":"tilelayer",
          "visible":true,
          "width":17,
@@ -250,6 +256,12 @@
          "offsetx":6,
          "offsety":9,
          "opacity":1,
+         "properties":[
+                {
+                 "name":"depth",
+                 "type":"int",
+                 "value":920
+                }],
          "type":"tilelayer",
          "visible":true,
          "width":17,
@@ -554,7 +566,7 @@
                  "y":128.113879003559
                 }, 
                 {
-                 "height":7.11743772241994,
+                 "height":17.4700744095762,
                  "id":9,
                  "name":"",
                  "opacity":1,
@@ -563,22 +575,22 @@
                  "visible":true,
                  "width":5.17631834357815,
                  "x":403.105791006147,
-                 "y":119.055321902297
+                 "y":108.702685215141
                 }, 
                 {
-                 "height":5.8233581365254,
+                 "height":11.6467162730508,
                  "id":10,
                  "name":"",
                  "opacity":1,
                  "rotation":0,
                  "type":"",
                  "visible":true,
-                 "width":31.704949854416,
-                 "x":471.04496926561,
-                 "y":117.761242316402
+                 "width":38.1753477838887,
+                 "x":464.574571336137,
+                 "y":111.937884179877
                 }, 
                 {
-                 "height":5.8233581365254,
+                 "height":13.5878356518926,
                  "id":12,
                  "name":"",
                  "opacity":1,
@@ -662,7 +674,7 @@
                  "y":299.579424134584
                 }, 
                 {
-                 "height":10.3526366871563,
+                 "height":14.8819152377872,
                  "id":19,
                  "name":"",
                  "opacity":1,
@@ -807,30 +819,6 @@
                  "y":413.458427693303
                 }, 
                 {
-                 "height":5.82335813652537,
-                 "id":31,
-                 "name":"",
-                 "opacity":1,
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":4.52927855063086,
-                 "x":400.517631834358,
-                 "y":342.931090262051
-                }, 
-                {
-                 "height":3.88223875768358,
-                 "id":32,
-                 "name":"",
-                 "opacity":1,
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":5.82335813652537,
-                 "x":431.575541895827,
-                 "y":342.931090262051
-                }, 
-                {
                  "height":3.8822387576836,
                  "id":33,
                  "name":"",
@@ -843,7 +831,7 @@
                  "y":111.29084438693
                 }, 
                 {
-                 "height":28.4697508896797,
+                 "height":34.2931090262051,
                  "id":34,
                  "name":"",
                  "opacity":1,
@@ -852,19 +840,43 @@
                  "visible":true,
                  "width":6.47039792947265,
                  "x":357.165965706891,
-                 "y":122.290520867033
+                 "y":116.467162730508
                 }, 
                 {
-                 "height":9.05855710126173,
+                 "height":29.7638304755743,
                  "id":35,
                  "name":"",
                  "opacity":1,
                  "rotation":0,
                  "type":"",
                  "visible":true,
-                 "width":6.47039792947265,
-                 "x":398.576512455516,
-                 "y":355.871886120996
+                 "width":15.5289550307344,
+                 "x":397.929472662569,
+                 "y":357.165965706891
+                }, 
+                {
+                 "height":16.1759948236817,
+                 "id":36,
+                 "name":"",
+                 "opacity":1,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":53.0572630216758,
+                 "x":67.9391782594629,
+                 "y":262.69815593659
+                }, 
+                {
+                 "height":24.5875121319961,
+                 "id":37,
+                 "name":"",
+                 "opacity":1,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":14.8819152377872,
+                 "x":431.575541895827,
+                 "y":364.283403429311
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -873,7 +885,7 @@
          "y":0
         }],
  "nextlayerid":20,
- "nextobjectid":36,
+ "nextobjectid":38,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.12.2",
@@ -915,6 +927,19 @@
          "name":"Pixel Interiors 32x32pxl",
          "spacing":0,
          "tilecount":187,
+         "tileheight":32,
+         "tilewidth":32
+        }, 
+        {
+         "columns":8,
+         "firstgid":493,
+         "image":"..\/tilesets\/Interiors_free_16x16_as32.png",
+         "imageheight":1424,
+         "imagewidth":256,
+         "margin":0,
+         "name":"Interiors_free_16x16_as32",
+         "spacing":0,
+         "tilecount":352,
          "tileheight":32,
          "tilewidth":32
         }],

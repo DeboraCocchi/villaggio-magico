@@ -94,3 +94,36 @@
   margin-bottom: 34px;
   background: rgba(100, 181, 246, 0.85); /* azzurro accent (daniele) */
 }
+
+/* ── Telefono orizzontale: controlli scalati ~0.75 ────────────────
+   Lo zoom camera scende a ~1.5 su schermi piccoli (vedi
+   responsiveZoom.js): i controlli seguono la stessa proporzione per
+   occupare una frazione ragionevole dello schermo. */
+@media (max-width: 650px) {
+  .touch-pad {
+    width: 104px;
+    height: 104px;
+  }
+
+  .touch-pad-thumb {
+    width: 42px;
+    height: 42px;
+  }
+
+  .touch-buttons {
+    gap: 10px;
+  }
+
+  .touch-btn-a {
+    width: 56px;
+    height: 56px;
+    font-size: 20px;
+  }
+
+  .touch-btn-b {
+    width: 46px;
+    height: 46px;
+    font-size: 15px;
+    margin-bottom: 26px;
+  }
+}

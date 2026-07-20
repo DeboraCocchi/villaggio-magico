@@ -26,9 +26,6 @@ import { touchInput }     from '@game/utils/touchInput.js';
 import { useDialogStore } from '@store/useDialogStore.js';
 import './TouchControls.css';
 
-/** Corsa massima della levetta dal centro, in px. */
-const THUMB_TRAVEL_PX = 42;
-
 /**
  * Rileva se il dispositivo supporta il touch.
  *
@@ -100,24 +97,31 @@ export default function TouchControls() {
 
   const updatePad = useCallback((clientX, clientY) => {
     const pad = padRef.current;
+    const thumb = thumbRef.current;
     if (!pad) return;
 
     const rect = pad.getBoundingClientRect();
+    // Corsa massima della levetta dal centro, in px: raggio del pad meno
+    // raggio della levetta, così si adatta alla dimensione renderizzata
+    // (segue la media query in TouchControls.css invece di una costante).
+    const thumbRadius = thumb ? thumb.getBoundingClientRect().width / 2 : 0;
+    const travel = rect.width / 2 - thumbRadius;
+
     const dx = clientX - (rect.left + rect.width / 2);
     const dy = clientY - (rect.top + rect.height / 2);
 
     // Normalizza rispetto alla corsa massima, con clamp al bordo
     const dist = Math.hypot(dx, dy);
-    const clamped = Math.min(dist, THUMB_TRAVEL_PX);
-    const nx = dist > 0 ? (dx / dist) * (clamped / THUMB_TRAVEL_PX) : 0;
-    const ny = dist > 0 ? (dy / dist) * (clamped / THUMB_TRAVEL_PX) : 0;
+    const clamped = Math.min(dist, travel);
+    const nx = dist > 0 ? (dx / dist) * (clamped / travel) : 0;
+    const ny = dist > 0 ? (dy / dist) * (clamped / travel) : 0;
 
     touchInput.setDirection(nx, ny);
 
-    if (thumbRef.current) {
-      const px = nx * THUMB_TRAVEL_PX;
-      const py = ny * THUMB_TRAVEL_PX;
-      thumbRef.current.style.transform =
+    if (thumb) {
+      const px = nx * travel;
+      const py = ny * travel;
+      thumb.style.transform =
         `translate(calc(-50% + ${px}px), calc(-50% + ${py}px))`;
     }
   }, []);

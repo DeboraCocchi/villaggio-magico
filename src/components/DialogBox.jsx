@@ -165,7 +165,7 @@ export default function DialogBox() {
         {/* Footer: istruzione avanza */}
         <div style={styles.footer} onClick={handleAdvance}>
           {isComplete
-            ? <span style={styles.hint}>Clicca o premi Spazio per continuare ▶</span>
+            ? <span style={styles.hint}>Clicca o premi A per continuare ▶</span>
             : <span style={styles.hint}>...</span>
           }
         </div>
