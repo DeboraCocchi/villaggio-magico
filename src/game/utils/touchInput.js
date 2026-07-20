@@ -37,6 +37,9 @@ export const touchInput = {
   /** Timestamp (performance.now) dell'ultima pressione di A non consumata. */
   _aQueuedAt: 0,
 
+  /** Timestamp (performance.now) dell'ultima pressione di B non consumata. */
+  _bQueuedAt: 0,
+
   /**
    * Aggiorna le direzioni digitali a partire dal vettore normalizzato
    * della levetta ([-1, 1] su entrambi gli assi).
@@ -81,6 +84,27 @@ export const touchInput = {
   },
 
   /**
+   * Mette in coda una pressione del tasto B (raccogli oggetto).
+   * @returns {void}
+   */
+  queueB() {
+    this._bQueuedAt = performance.now()
+  },
+
+  /**
+   * Consuma la pressione di B in coda, se presente e recente.
+   * Edge-triggered: ritorna true una sola volta per pressione.
+   *
+   * @returns {boolean} true se c'era una pressione valida da consumare.
+   */
+  consumeB() {
+    if (!this._bQueuedAt) return false
+    const fresh = performance.now() - this._bQueuedAt <= A_MAX_AGE_MS
+    this._bQueuedAt = 0
+    return fresh
+  },
+
+  /**
    * Azzera tutto lo stato (chiamare quando il pad viene rilasciato
    * o il componente TouchControls viene smontato).
    * @returns {void}
@@ -88,5 +112,6 @@ export const touchInput = {
   reset() {
     this.left = this.right = this.up = this.down = false
     this._aQueuedAt = 0
+    this._bQueuedAt = 0
   },
 }

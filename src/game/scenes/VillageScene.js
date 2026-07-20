@@ -422,6 +422,8 @@ this.events.once('shutdown', () => {
       left:  Phaser.Input.Keyboard.KeyCodes.A,
       right: Phaser.Input.Keyboard.KeyCodes.D,
     })
+    // Tasto F (keyboard) per raccogliere oggetti, equivalente del tasto B touch
+    this.collectKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F)
 
     // ── Debug coord tile (F2 per toggle) ─────────────────────────────────────
     // Non usiamo più un testo sempre visibile (causava la "lineetta verde").
@@ -522,7 +524,8 @@ this.events.once('shutdown', () => {
       this.debugText.setText(`tile (${tx},${ty})  px (${Math.floor(this.player.x)},${Math.floor(this.player.y)})`)
     }
 
-    this.itemManager?.update(this.player.x, this.player.y)
+    const collectPressed = touchInput.consumeB() || Phaser.Input.Keyboard.JustDown(this.collectKey)
+    this.itemManager?.update(this.player.x, this.player.y, collectPressed)
     this.npcManager?.update(this.player.x, this.player.y, delta)
     this.petManager?.update(this.player.x, this.player.y, delta, this.playerFacing)
   }

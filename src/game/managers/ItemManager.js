@@ -43,6 +43,9 @@ const MAX_MISSION_AMOUNT = 6;
 /** Raggio di raccolta (px mappa) attorno al player. */
 const PICKUP_RADIUS = 18;
 
+/** Numero massimo di oggetti dello stesso tipo raccoglibili in un giorno. */
+const MAX_DAILY_PER_TYPE = 12;
+
 /**
  * Mappa tipi specifici (nomi Tiled) → categoria generica usata da
  * magazzino e quest. Es. 'arancia' → 'fruit', 'tulipano' → 'flower'.
@@ -105,6 +108,18 @@ export class ItemManager {
     /** @type {Map<number, (CollectibleFruit|CollectibleEmoji)>} */
     this._active = new Map();
 
+    /**
+     * Testo "Premi B" mostrato sopra l'oggetto raccoglibile più vicino.
+     * @type {Phaser.GameObjects.Text}
+     */
+    this._hintText = scene.add.text(0, 0, 'premi B 🌿​', {
+      fontSize:   '9px',
+      fontFamily: 'Segoe UI, system-ui, sans-serif',
+      color:      '#ffffff',
+      backgroundColor: '#4a3728',
+      padding:    { x: 4, y: 2 },
+    }).setOrigin(0.5).setDepth(200).setVisible(false);
+
     const saved = this._loadSavedState();
 
     /** @type {string|null} Tipo oggetto richiesto dalla missione di oggi. */
@@ -116,6 +131,13 @@ export class ItemManager {
     /** @type {Set<number>} Id (Tiled) degli oggetti già raccolti oggi. */
     this.collectedIds = new Set(saved?.collectedIds ?? []);
 
+    /**
+     * Conteggio giornaliero per categoria (flower, shell, fruit, mushroom).
+     * Derivato da collectedIds al caricamento per evitare dati duplicati.
+     * @type {Map<string, number>}
+     */
+    this._collectedCountByType = new Map();
+
     /** @type {Array<{id:number, type:string, x:number, y:number}>} */
     this._slots = this._collectSlots(map);
 
@@ -123,6 +145,15 @@ export class ItemManager {
     this._slotById = new Map(this._slots.map((s) => [s.id, s]));
 
     this._rollMissionAndSpawn();
+
+    // Ricostruisce il conteggio per tipo dagli id già raccolti (dopo _slotById)
+    for (const id of this.collectedIds) {
+      const slot = this._slotById.get(id);
+      if (!slot) continue;
+      const cat = categoryOf(slot.type);
+      this._collectedCountByType.set(cat, (this._collectedCountByType.get(cat) ?? 0) + 1);
+    }
+
     this._emitProgress();
   }
 
@@ -132,22 +163,55 @@ export class ItemManager {
 
   /**
    * Controlla se il player è abbastanza vicino a un collezionabile attivo
-   * e, in caso, lo raccoglie. Chiamare da `scene.update()` ogni frame.
+   * e, se viene premuto il tasto di raccolta (B touch / F keyboard), lo raccoglie.
+   * Rispetta il limite di 12 oggetti per tipo al giorno.
+   * Chiamare da `scene.update()` ogni frame.
    *
-   * @param {number} playerX
-   * @param {number} playerY
+   * @param {number}  playerX
+   * @param {number}  playerY
+   * @param {boolean} collectPressed - true se il giocatore ha premuto B/F in questo frame.
    * @returns {void}
    */
-  update(playerX, playerY) {
-    if (this._active.size === 0) return;
+  update(playerX, playerY, collectPressed) {
+    if (this._active.size === 0) {
+      this._hintText?.setVisible(false);
+      return;
+    }
+
+    // Cerca l'oggetto più vicino entro raggio
+    let nearestId   = null;
+    let nearestItem = null;
+    let nearestDist = Infinity;
 
     for (const [id, item] of this._active) {
       const dx = item.x - playerX;
       const dy = item.y - playerY;
-      if (dx * dx + dy * dy <= PICKUP_RADIUS * PICKUP_RADIUS) {
-        this._collect(id, item);
+      const d2 = dx * dx + dy * dy;
+      if (d2 <= PICKUP_RADIUS * PICKUP_RADIUS && d2 < nearestDist) {
+        nearestDist = d2;
+        nearestId   = id;
+        nearestItem = item;
       }
     }
+
+    // Mostra/nasconde hint "premi B" sopra l'oggetto vicino
+    if (nearestItem && this._hintText) {
+      this._hintText
+        .setPosition(nearestItem.x, nearestItem.y - 36)
+        .setVisible(true);
+    } else {
+      this._hintText?.setVisible(false);
+    }
+
+    if (!collectPressed || !nearestItem) return;
+
+    const category = categoryOf(nearestItem.type);
+    const count = this._collectedCountByType.get(category) ?? 0;
+    if (count >= MAX_DAILY_PER_TYPE) {
+      emitToReact('item:limitReached', { type: category });
+      return;
+    }
+    this._collect(nearestId, nearestItem);
   }
 
   /**
@@ -158,6 +222,8 @@ export class ItemManager {
   destroy() {
     for (const item of this._active.values()) item.destroy();
     this._active.clear();
+    this._hintText?.destroy();
+    this._hintText = null;
   }
 
   // ─────────────────────────────────────────────────────────────────
@@ -329,12 +395,13 @@ export class ItemManager {
     item.collect();
     this._active.delete(id);
     this.collectedIds.add(id);
+    const category = categoryOf(item.type);
+    this._collectedCountByType.set(category, (this._collectedCountByType.get(category) ?? 0) + 1);
     this._saveState();
     this._emitProgress();
 
     // Notifica il sistema quest (QuestManager) della raccolta.
     // Evento generico sul bridge: nessun accoppiamento diretto.
-    const category = categoryOf(item.type);
     emitToReact('item:collected', { type: category });
     useMagazzinoStore.getState().recordCollect(category);
   }

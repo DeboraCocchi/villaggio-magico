@@ -36,54 +36,54 @@ import { SeasonalDaylight } from '../utils/SeasonalDaylight.js';
 const SEASONAL_KEYFRAMES = {
   inverno: [
     // Dicembre–Febbraio: giorni corti (alba ~7:30, tramonto ~16:45)
-    { hour: 0,    stops: ['#0a1526', '#0e1c34', '#0a1526'], alpha: 0.68 }, // notte
-    { hour: 7,    stops: ['#0a1526', '#0e1c34', '#0a1526'], alpha: 0.68 },
+    { hour: 0,    stops: ['#0a1526', '#0e1c34', '#0a1526'], alpha: 0.45 }, // notte
+    { hour: 7,    stops: ['#0a1526', '#0e1c34', '#0a1526'], alpha: 0.45 },
     { hour: 7.5,  stops: ['#233a63', '#5a5f8f', '#c98fae'], alpha: 0.34 }, // alba fredda
     { hour: 8.5,  stops: ['#ffffff', '#ffffff', '#ffffff'], alpha: 0    }, // giorno pieno
     { hour: 16.5, stops: ['#ffffff', '#ffffff', '#ffffff'], alpha: 0    },
     { hour: 17,   stops: ['#4a2f74', '#c9525a', '#e8935a'], alpha: 0.32 }, // tramonto
-    { hour: 17.5, stops: ['#2a1f45', '#3d2a52', '#2f2050'], alpha: 0.42 }, // crepuscolo
-    { hour: 18,   stops: ['#0a1526', '#0e1c34', '#0a1526'], alpha: 0.68 },
-    { hour: 24,   stops: ['#0a1526', '#0e1c34', '#0a1526'], alpha: 0.68 },
+    { hour: 17.5, stops: ['#2a1f45', '#3d2a52', '#2f2050'], alpha: 0.30 }, // crepuscolo
+    { hour: 18,   stops: ['#0a1526', '#0e1c34', '#0a1526'], alpha: 0.45 },
+    { hour: 24,   stops: ['#0a1526', '#0e1c34', '#0a1526'], alpha: 0.45 },
   ],
 
   primavera: [
     // Marzo–Maggio: giorni allungati (alba ~6:00→4:45, tramonto ~18:00→19:15)
-    { hour: 0,    stops: ['#0a1526', '#0e1c34', '#0a1526'], alpha: 0.68 },
-    { hour: 4.5,  stops: ['#0a1526', '#0e1c34', '#0a1526'], alpha: 0.68 },
+    { hour: 0,    stops: ['#0a1526', '#0e1c34', '#0a1526'], alpha: 0.45 },
+    { hour: 4.5,  stops: ['#0a1526', '#0e1c34', '#0a1526'], alpha: 0.45 },
     { hour: 5,    stops: ['#28406e', '#6b7fb8', '#e0a98a'], alpha: 0.30 }, // alba
     { hour: 6.5,  stops: ['#ffffff', '#ffffff', '#ffffff'], alpha: 0    },
     { hour: 19,   stops: ['#ffffff', '#ffffff', '#ffffff'], alpha: 0    },
     { hour: 19.5, stops: ['#5b2f74', '#d1495b', '#f2a54f'], alpha: 0.30 }, // tramonto
-    { hour: 20.2, stops: ['#2e1f4d', '#432a5c', '#33215a'], alpha: 0.40 }, // crepuscolo
-    { hour: 21,   stops: ['#0a1526', '#0e1c34', '#0a1526'], alpha: 0.68 },
-    { hour: 24,   stops: ['#0a1526', '#0e1c34', '#0a1526'], alpha: 0.68 },
+    { hour: 20.2, stops: ['#2e1f4d', '#432a5c', '#33215a'], alpha: 0.38 }, // crepuscolo
+    { hour: 21,   stops: ['#0a1526', '#0e1c34', '#0a1526'], alpha: 0.45 },
+    { hour: 24,   stops: ['#0a1526', '#0e1c34', '#0a1526'], alpha: 0.45 },
   ],
 
   estate: [
     // Giugno–Agosto: giorni lunghi (alba ~4:45, tramonto ~21:00)
-    { hour: 0,    stops: ['#122544', '#182c52', '#122544'], alpha: 0.64 }, // notte estiva, più mite
-    { hour: 4,    stops: ['#122544', '#182c52', '#122544'], alpha: 0.64 },
+    { hour: 0,    stops: ['#122544', '#182c52', '#122544'], alpha: 0.42 }, // notte estiva, più mite
+    { hour: 4,    stops: ['#122544', '#182c52', '#122544'], alpha: 0.42 },
     { hour: 4.5,  stops: ['#2a4373', '#7488c2', '#f2b98a'], alpha: 0.28 }, // alba dorata
     { hour: 5.5,  stops: ['#ffffff', '#ffffff', '#ffffff'], alpha: 0    },
     { hour: 20.5, stops: ['#ffffff', '#ffffff', '#ffffff'], alpha: 0    },
     { hour: 21,   stops: ['#6a2f6e', '#e2564a', '#f7b955'], alpha: 0.24 }, // tramonto acceso
-    { hour: 21.8, stops: ['#331f52', '#4a2a63', '#382363'], alpha: 0.36 }, // crepuscolo
-    { hour: 22.5, stops: ['#122544', '#182c52', '#122544'], alpha: 0.64 },
-    { hour: 24,   stops: ['#122544', '#182c52', '#122544'], alpha: 0.64 },
+    { hour: 21.8, stops: ['#331f52', '#4a2a63', '#382363'], alpha: 0.35 }, // crepuscolo
+    { hour: 22.5, stops: ['#122544', '#182c52', '#122544'], alpha: 0.42 },
+    { hour: 24,   stops: ['#122544', '#182c52', '#122544'], alpha: 0.42 },
   ],
 
   autunno: [
     // Settembre–Novembre: giorni accorciati (alba ~6:00→7:30, tramonto ~18:30→16:30)
-    { hour: 0,    stops: ['#0a1526', '#0e1c34', '#0a1526'], alpha: 0.68 },
-    { hour: 6,    stops: ['#0a1526', '#0e1c34', '#0a1526'], alpha: 0.68 },
+    { hour: 0,    stops: ['#0a1526', '#0e1c34', '#0a1526'], alpha: 0.45 },
+    { hour: 6,    stops: ['#0a1526', '#0e1c34', '#0a1526'], alpha: 0.45 },
     { hour: 6.5,  stops: ['#243d68', '#6478ae', '#dba888'], alpha: 0.32 }, // alba
     { hour: 7.5,  stops: ['#ffffff', '#ffffff', '#ffffff'], alpha: 0    },
     { hour: 18,   stops: ['#ffffff', '#ffffff', '#ffffff'], alpha: 0    },
     { hour: 18.5, stops: ['#4f2a63', '#c94f4a', '#e89a52'], alpha: 0.30 }, // tramonto
-    { hour: 19.2, stops: ['#2a1d47', '#3e2856', '#301f52'], alpha: 0.41 }, // crepuscolo
-    { hour: 20,   stops: ['#0a1526', '#0e1c34', '#0a1526'], alpha: 0.68 },
-    { hour: 24,   stops: ['#0a1526', '#0e1c34', '#0a1526'], alpha: 0.68 },
+    { hour: 19.2, stops: ['#2a1d47', '#3e2856', '#301f52'], alpha: 0.39 }, // crepuscolo
+    { hour: 20,   stops: ['#0a1526', '#0e1c34', '#0a1526'], alpha: 0.45 },
+    { hour: 24,   stops: ['#0a1526', '#0e1c34', '#0a1526'], alpha: 0.45 },
   ],
 };
 
@@ -142,8 +142,9 @@ export class DayNightSystem {
     this.overlay = scene.add.image(0, 0, OVERLAY_TEXTURE_KEY)
       .setOrigin(0, 0)
       .setScrollFactor(0)
-      .setDepth(OVERLAY_DEPTH);
-    // Nessun setBlendMode qui: resta NORMAL, per non sporcare i colori del gradiente.
+      .setDepth(OVERLAY_DEPTH)
+      .setBlendMode(Phaser.BlendModes.MULTIPLY);
+    // MULTIPLY: oscura meno aggressivamente e mantiene gli sprite visibili di notte
 
     /** @type {Phaser.GameObjects.Container[]} */
     this._houseLights = housePositions.map(({ x, y }) => this._createHouseLight(x, y));

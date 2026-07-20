@@ -160,8 +160,13 @@ export default function TouchControls() {
 
   const onPressB = useCallback((e) => {
     e.preventDefault();
-    // B = annulla/chiudi, come Escape (DialogBox lo gestisce già)
-    dispatchSyntheticKey('Escape');
+    if (useDialogStore.getState().isOpen) {
+      // Dialogo aperto: B = annulla/chiudi, come Escape
+      dispatchSyntheticKey('Escape');
+    } else {
+      // Nessun dialogo: B = raccogli oggetto vicino
+      touchInput.queueB();
+    }
   }, []);
 
   // Cleanup su unmount: nessuna direzione "fantasma"

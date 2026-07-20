@@ -250,7 +250,7 @@
 .hud-quests.is-open .hud-quests-popover {
   max-height: 60vh;
   width: 240px;
-  min-height: 110px;
+  min-height: 140px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   opacity: 1;

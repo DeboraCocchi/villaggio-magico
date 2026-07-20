@@ -33,12 +33,13 @@ export const NPC_DIALOGUES = {
   // ── Nonno Daniele ─────────────────────────────────────────────
   nonno_daniele: {
     personality:
-      'Saggio e affettuosissimo, un po\u2019 burlone. Racconta sempre storie del passato '
-      + 'e piccoli aneddoti di famiglia. Adora Cecilia e la chiama "Cecilia mia". '
+      'Saggio e affettuoso, un po\u2019 burlone. Racconta sempre storie del passato '
+      + 'e piccoli aneddoti di famiglia. Adora Cecilia e la chiama "Cece". '
       + 'Ama il giardino, i suoi animali Robby (cane) e Corrado (gatto), e d\u2019estate '
       + 'gonfia la piscinetta in giardino.',
     topics: [
       'storie di quando era giovane',
+      'storie di quando mamma Chiara e zia Debora erano piccole',
       'il giardino e l\u2019orto',
       'Robby il cane e Corrado il gatto',
       'la piscinetta d\u2019estate',
@@ -46,11 +47,11 @@ export const NPC_DIALOGUES = {
       'l\u2019albero di mele vicino casa',
     ],
     speechStyle:
-      'Parla lentamente, con dolcezza. Usa "Cecilia mia", "ai miei tempi...", '
+      'Parla lentamente, con dolcezza. Usa "Cece", "ai miei tempi...", '
       + '"vieni qui dal nonno". Ogni tanto la sua frase preferita: "Accendiamo la piscinetta?"',
     initialDialogs: [
       [
-        'Cecilia mia! Stavo proprio pensando a te. 👴',
+        'Ciao Cece! Stavo proprio pensando a te. 👨‍🦰​',
         'Siediti qui con il nonno sulla panchina.',
         'Ti va di sentire una storia di quando ero piccolo?',
       ],
@@ -76,7 +77,7 @@ export const NPC_DIALOGUES = {
       ],
       [
         'Ti ho mai raccontato del mio primo lavoro?',
-        'Andavo in bicicletta ogni mattina all\u2019alba.',
+        'Ci andavo in bici, con la mia bicicletta rossa fuoco.',
         'Ai miei tempi non c\u2019erano i tablet, sai? 😄',
       ],
       [
@@ -85,9 +86,9 @@ export const NPC_DIALOGUES = {
         'Corrado per\u00f2 ci dorme sopra... birbante!',
       ],
       [
-        'Cecilia mia, hai visto che bel cielo?',
+        'Cece hai visto che bel cielo?',
         'Quando il cielo \u00e8 cos\u00ec, domani sar\u00e0 una bella giornata.',
-        'Me l\u2019ha insegnato il MIO nonno, tanto tempo fa. ⭐',
+        'Me l\u2019ha insegnato la mia mamma, tanto tempo fa. ⭐',
       ],
       [
         'Lo sai che Robby da cucciolo stava in una scarpa?',
@@ -97,7 +98,7 @@ export const NPC_DIALOGUES = {
       [
         'Vieni, che il nonno ti mostra un segreto...',
         'Vedi quel sasso vicino alla panchina?',
-        'L\u00ec sotto ci nascondevo i tesori da bambino! 💎',
+        'L\u00ec sotto nasce ogni anno un tulipano blu come il mare! 💎',
       ],
     ],
   },
@@ -111,18 +112,19 @@ export const NPC_DIALOGUES = {
     topics: [
       'cucinare dolci e merende',
       'la famiglia',
+      'aneddoti di quando babbo Ale era piccolo',
       'i fiori rosa e viola del giardino',
       'l\u2019altalena di legno',
       'coprirsi bene e stare in salute',
       'ricette segrete della nonna',
     ],
     speechStyle:
-      'Calorosa e un po\u2019 apprensiva. Usa "tesoro mio", "hai mangiato?", '
+      'Calorosa e un po\u2019 apprensiva. Usa "Cecilia", "hai mangiato?", '
       + '"copriti che prendi freddo!". La sua frase preferita: "Vieni a tavola!"',
     initialDialogs: [
       [
-        'Cecilia!! Tesoro mio! 🍪',
-        'Hai fame? Ho appena sfornato i biscotti.',
+        'Cecilia!! ',
+        'Hai fame? Ho appena sfornato i biscotti.🍪',
         'Copriti per\u00f2, che fuori c\u2019\u00e8 venticello!',
       ],
       [
@@ -151,7 +153,7 @@ export const NPC_DIALOGUES = {
         'Domattina la mettiamo sul pane, va bene?',
       ],
       [
-        'Che bello vederti, tesoro mio!',
+        'Che bello vederti, Cecilia!',
         'La casa \u00e8 pi\u00f9 allegra quando ci sei tu.',
         'Adesso per\u00f2 mettiti la giacchetta, eh! 🧥',
       ],
@@ -181,6 +183,9 @@ export const NPC_DIALOGUES = {
       + 'costruire cose e fare scoperte nel villaggio. Un po\u2019 tecnologica e curiosa.',
     topics: [
       'giochi e avventure da inventare',
+      'giochi di parole e indovinelli',
+      'storie di quando mamma Chiara e zia Debora erano piccole',
+      'disegnare, inventare e creare cose insieme',
       'nuove idee e progetti',
       'offerte e scambi divertenti',
       'esplorare il villaggio insieme',
@@ -188,7 +193,7 @@ export const NPC_DIALOGUES = {
       'piccoli enigmi e indovinelli',
     ],
     speechStyle:
-      'Energica e giocosa. Usa "Ehi Cece!", "ho un\u2019idea!", "che ne dici di...". '
+      'Energica e giocosa. Usa "Ehi Cece!", "Ehi Ceciolini!", "ho un\u2019idea!", "che ne dici di...". '
       + 'La sua frase preferita: "Affare fatto!"',
     initialDialogs: [
       [
@@ -203,8 +208,23 @@ export const NPC_DIALOGUES = {
       ],
       [
         'Indovinello del giorno! 🤔',
-        'Ha le foglie ma non \u00e8 un libro, cos\u2019\u00e8?',
+        'Quando arriva il freddo… Si spoglia! Cos\u2019\u00e8?',
         '...Un albero! Troppo facile per te, eh?',
+      ],
+      [
+        'Ehi Cece, pensavo proprio a te...',
+        'Lo sai che anche se vivo lontano ti penso sempre e mi manchi tanto? ❤️',
+        'Non vedo l\u2019ora di rivederti!',
+      ],
+      [
+        'Ehi Cece, mi raccomando...',
+        'Ricorda sempre che anche se sono lontana ti voglio bene e ti penso sempre... ❤️',
+        '...Ma sempre, sempre!',
+      ],
+      [
+        'Indovinello del giorno! 🤓​',
+        'Quando si alza non fa rumore, ma sveglia tutti. Cos\u2019\u00e8?',
+        '...Il Sole! Grande, sapevo che avresti indovinato!',
       ],
       [
         'Cece, guarda cosa ho trovato!',
@@ -217,15 +237,20 @@ export const NPC_DIALOGUES = {
         'Un giorno ci facciamo un picnic, promesso.',
       ],
       [
-        'Nuova offerta della zia! 🎉',
-        'Tre fiori rosa in cambio di una storia buffa.',
-        'Le storie buffe valgono oro, sai?',
+        'Ehi Cece, come andiamo? Senti questa...',
+        'Cosa dice il Numero 0 al Numero 8?',
+        '"Bella cintura!" 😄',
       ],
-      [
-        'Ehi Cece, giochiamo? 🎲',
-        'Ho inventato un gioco nuovo: caccia al tesoro!',
-        'Il primo indizio \u00e8... vicino a un albero di mele!',
-      ],
+      // [
+      //   'Nuova offerta della zia! 🎉',
+      //   'Tre fiori rosa in cambio di una storia buffa.',
+      //   'Le storie buffe valgono oro, sai?',
+      // ],
+      // [
+      //   'Ehi Cece, giochiamo? 🎲',
+      //   'Ho inventato un gioco nuovo: caccia al tesoro!',
+      //   'Il primo indizio \u00e8... vicino a un albero di mele!',
+      // ],
       [
         'Oggi ho sistemato tutto il magazzino.',
         'Ho trovato cose che non ricordavo di avere! 😄',
@@ -236,11 +261,11 @@ export const NPC_DIALOGUES = {
         'Insieme potremmo aprire un negozio di avventure!',
         '"Cece & Zia: esploratrici professioniste". 🗺️',
       ],
-      [
-        'Psst... Cece, un segreto: 🤫',
-        'ho nascosto una sorpresina vicino alla tua casetta.',
-        'Occhi aperti! E... affare fatto!',
-      ],
+      // [
+      //   'Psst... Cece, un segreto: 🤫',
+      //   'ho nascosto una sorpresina vicino alla tua casetta.',
+      //   'Occhi aperti! E... affare fatto!',
+      // ],
     ],
   },
 
@@ -254,10 +279,13 @@ export const NPC_DIALOGUES = {
       'Una nuova storia da inventare',
       'Un gioco di parole da fare insieme',
       'Una canzone da cantare a due voci',
+      'Mettere su della musica e ballare per casa',
       'Un abbraccio lungo e caldo',
+      'La gara di baci col ciocco',
+      'Guardarsi un film accoccolate sul divano'
     ],
     speechStyle:
-      'Parla con entusiasmo e dolcezza. Usa "Cece, vieni qui un attimo?!", "ti voglio bene amore mio", '
+      'Parla con entusiasmo e dolcezza. Usa "Cece, vieni qui un attimo?!", "ti voglio bene amore", '
       + '"facciamo una canzone!". La sua frase preferita: "Dai un bacino a mamma?"',
     initialDialogs: [
       [
@@ -307,7 +335,7 @@ export const NPC_DIALOGUES = {
       ],
       [
         'La mamma ha una cosa importante da chiederti... 😊',
-        'Dai un bacino a mamma?',
+        'Mi daresti un bacino?',
         'Ecco! Adesso la giornata \u00e8 perfetta. 💋',
       ],
     ],

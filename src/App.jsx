@@ -3,6 +3,7 @@ import PlayerHud  from '@components/PlayerHud.jsx';
 import DialogBox  from '@components/DialogBox.jsx';
 import MagazzinoPanel from '@components/MagazzinoPanel.jsx';
 import TouchControls from '@components/TouchControls.jsx';
+import Toast from '@components/Toast.jsx';
 
 /**
  * Root dell'applicazione.
@@ -48,6 +49,7 @@ export default function App() {
         <DialogBox />
         <MagazzinoPanel />
         <TouchControls />
+        <Toast />
       </div>
     </div>
   );

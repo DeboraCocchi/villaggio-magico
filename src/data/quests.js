@@ -1,8 +1,8 @@
 /**
  * @file quests.js
  * Definizioni statiche delle missioni del villaggio, assegnate dai
- * tre NPC di famiglia (vedi villageConfig.js): Nonno Daniele,
- * Nonna Anna e Zia Debora.
+ * cinque NPC di famiglia (vedi villageConfig.js): Nonno Daniele,
+ * Nonna Anna, Zia Debora, Mamma Chiara e Babbo Ale.
  *
  * I target degli step 'collect' usano ESATTAMENTE i tipi spawmati da
  * ItemManager dagli Object Layer di Tiled: 'flower'|'shell'|'fruit'|'mushroom'.
@@ -43,8 +43,8 @@ export const QUESTS = [
   {
     id:          'q01_torta_nonna_anna',
     giverNpc:    'nonna_anna',
-    title:       'La torta di Nonna Anna 🥧',
-    description: 'La nonna vuole preparare la sua famosa torta di frutta, '
+    title:       'La crostata di Nonna Anna 🥧',
+    description: 'La nonna vuole preparare la sua famosa crostata di frutta, '
                + 'ma le servono frutti freschi!',
     steps: [
       {
@@ -61,7 +61,7 @@ export const QUESTS = [
     ],
     offerDialog: [
       'Cecilia tesoro, mi aiuti? 🥧',
-      'Voglio fare la torta di frutta...',
+      'Voglio fare la crostata di frutta...',
       'Mi porti 6 frutti belli maturi?',
     ],
     completionDialog: [
@@ -84,8 +84,8 @@ export const QUESTS = [
       {
         type:   'collect',
         target: 'flower',
-        amount: 5,
-        hint:   'Raccogli 5 fiori 🌸 nei prati del villaggio!',
+        amount: 10,
+        hint:   'Raccogli 10 fiori 🌸 nei prati del villaggio!',
       },
       {
         type:   'talk',
@@ -96,7 +96,7 @@ export const QUESTS = [
     offerDialog: [
       'Cecilia mia, ho un\u2019idea! 👴',
       'Rendiamo bella la panchina del giardino.',
-      'Mi raccogli 5 fiori colorati?',
+      'Mi raccogli 10 fiori colorati?',
     ],
     completionDialog: [
       'Ma che meraviglia, Cecilia mia! 🌸',
@@ -118,8 +118,8 @@ export const QUESTS = [
       {
         type:   'collect',
         target: 'mushroom',
-        amount: 3,
-        hint:   'Cerca 3 funghetti 🍄 all\u2019ombra degli alberi!',
+        amount: 5,
+        hint:   'Cerca 5 funghetti 🍄 all\u2019ombra degli alberi!',
       },
       {
         type:   'talk',
@@ -130,14 +130,14 @@ export const QUESTS = [
     offerDialog: [
       'Psst, Cecilia mia... 🍄',
       'Ho una voglia matta del risotto ai funghi!',
-      'Trovi 3 funghetti e me li porti?',
+      'Trovi 5 funghetti e me li porti?',
     ],
     completionDialog: [
       'Funghetti freschi! Che bello! 🍄',
       'Stasera risotto per tutti, babbo compreso.',
       'Sei un tesoro, tieni le tue campane! 🔔',
     ],
-    reward:  { coins: 120 },
+    reward:  { coins: 80 },
     seasons: [],
   },
 
@@ -152,8 +152,8 @@ export const QUESTS = [
       {
         type:   'collect',
         target: 'shell',
-        amount: 6,
-        hint:   'Cerca 6 conchiglie 🐚 sulla spiaggia a sud!',
+        amount: 8,
+        hint:   'Cerca 8 conchiglie 🐚 sulla spiaggia a sud!',
       },
       {
         type:   'talk',
@@ -163,7 +163,7 @@ export const QUESTS = [
     ],
     offerDialog: [
       'Ehi Cece, offerta speciale! 🐚',
-      '6 conchiglie in cambio di campane sonanti.',
+      '8 conchiglie in cambio di campane sonanti.',
       'E ti faccio pure una collana. Affare fatto?',
     ],
     completionDialog: [
@@ -209,8 +209,90 @@ export const QUESTS = [
       'Sei l\u2019esploratrice più brava del villaggio.',
       'Premio speciale per te: campane! 🔔',
     ],
-    reward:  { coins: 150 },
+    reward:  { coins: 100 },
     seasons: [],
+  },
+
+  // ── Mamma Chiara — giro delle parole (solo 'talk') ────────────
+  {
+    id:          'q06_la_canzone_di_famiglia',
+    giverNpc:    'mamma_chiara',
+    title:       'La canzone di famiglia 🎶',
+    description: 'La mamma vuole scrivere una canzone tutta per Cecilia, '
+               + 'ma le serve una parola speciale da ogni componente della famiglia!',
+    steps: [
+      {
+        type:   'talk',
+        target: 'nonno_daniele',
+        hint:   'Chiedi al nonno una parola per la canzone! 👴',
+      },
+      {
+        type:   'talk',
+        target: 'nonna_anna',
+        hint:   'Ora chiedi una parola alla nonna! 👵',
+      },
+      {
+        type:   'talk',
+        target: 'zia_debora',
+        hint:   'La zia avrà di sicuro un\u2019idea originale! 💡',
+      },
+      {
+        type:   'talk',
+        target: 'babbo_ale',
+        hint:   'Chiedi al babbo di aiutarti con la musica! 🎸',
+      },
+      {
+        type:   'talk',
+        target: 'mamma_chiara',
+        hint:   'Torna dalla mamma con tutte le parole raccolte!',
+      },
+    ],
+    offerDialog: [
+      'Cece, ho un\u2019idea fantastica! 🎵',
+      'Voglio scrivere una canzone tutta per te...',
+      'Mi porti una parola speciale da ognuno di famiglia?',
+    ],
+    completionDialog: [
+      'Che parole bellissime, amore mio! 🎶',
+      'Adesso la nostra canzone è perfetta.',
+      'Ecco le tue campane, meritatissime! 🔔',
+    ],
+    reward:  { coins: 120 },
+    seasons: [],
+  },
+
+  // ── Babbo Ale ─────────────────────────────────────────────────
+  {
+    id:          'q07_conchiglie_in_musica',
+    giverNpc:    'babbo_ale',
+    title:       'Conchiglie in musica 🎸',
+    description: 'Il babbo vuole costruire un campanellino di conchiglie '
+               + 'da appendere in veranda, che suoni con il vento!',
+    steps: [
+      {
+        type:   'collect',
+        target: 'shell',
+        amount: 6,
+        hint:   'Raccogli 6 conchiglie 🐚 sulla spiaggia!',
+      },
+      {
+        type:   'talk',
+        target: 'babbo_ale',
+        hint:   'Porta le conchiglie al babbo!',
+      },
+    ],
+    offerDialog: [
+      'Cece, tesoro, senti questa idea! 🎸',
+      'Voglio costruire un campanellino che suona col vento...',
+      'Mi porti 6 conchiglie belle sonore?',
+    ],
+    completionDialog: [
+      'Perfette, tesoro! 🐚',
+      'Sentirai che musica quando appenderemo tutto in veranda!',
+      'Ecco le tue campane, ben suonate! 🔔',
+    ],
+    reward:  { coins: 90 },
+    seasons: ['estate'],
   },
 ];
 
